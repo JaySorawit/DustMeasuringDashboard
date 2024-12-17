@@ -1,4 +1,3 @@
-// src/database.ts
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 
@@ -6,10 +5,6 @@ require('dotenv').config();  // This loads environment variables from the .env f
 
 // Load environment variables from .env file
 dotenv.config();
-
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
-
 
 // Initialize Sequelize with SQL Server connection details
 const sequelize = new Sequelize({

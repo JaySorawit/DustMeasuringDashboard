@@ -1,4 +1,3 @@
-// dustMeasurement.ts (Sequelize model)
 import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../database';
 
@@ -24,15 +23,18 @@ DustMeasurement.init(
     {
         measurement_date: {
             type: DataTypes.DATEONLY,
-            allowNull: false
+            allowNull: false,
+            primaryKey: true,
         },
         measurement_time: {
             type: DataTypes.TIME,
-            allowNull: false
+            allowNull: false,
+            primaryKey: true,
         },
         location_id: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            primaryKey: true,
         },
         dust_value: {
             type: DataTypes.INTEGER,
@@ -40,13 +42,14 @@ DustMeasurement.init(
         },
         dust_type: {
             type: DataTypes.FLOAT,
-            allowNull: false
+            allowNull: false,
+            primaryKey: true,
         }
     },
     {
         sequelize,
         modelName: 'DustMeasurement',
-        tableName: 'dust_measurements',
+        tableName: 'Dust_Measuring_Entity',  // Ensure the table name matches
         timestamps: false
     }
 );

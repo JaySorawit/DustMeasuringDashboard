@@ -1,9 +1,9 @@
-// dustMeasurementRoutes.ts
 import express from 'express';
-import { getDustMeasurements } from '../controllers/dustMeasurementController';
+import { getDustMeasurements, createDustMeasurement } from '../controllers/dustMeasurementController';
 
 const router = express.Router();
 
 router.get('/', getDustMeasurements);
+router.post('/', createDustMeasurement);
 
 export default router;
