@@ -1,6 +1,6 @@
 // src/components/Filters.tsx
 import React, { useState } from "react";
-import { MenuItem, Select, FormControl, InputLabel, Box } from "@mui/material";
+import { MenuItem, Select, FormControl, InputLabel, Box, Checkbox, ListItemText, OutlinedInput } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -25,7 +25,12 @@ const FilterPanel: React.FC<FilterProps> = ({ locations, dustTypes, onFilterChan
   const handleDustTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const value = event.target.value as string[];
     setSelectedDustTypes(value);
-    onFilterChange({ selectedLocations, selectedDustTypes: value, startDate, endDate });
+    onFilterChange({
+      selectedLocations,
+      selectedDustTypes: value,
+      startDate,
+      endDate
+    });
   };
 
   const handleDateChange = (start: Date | null, end: Date | null) => {
@@ -43,6 +48,7 @@ const FilterPanel: React.FC<FilterProps> = ({ locations, dustTypes, onFilterChan
           value={selectedLocations}
           onChange={handleLocationChange}
           renderValue={(selected) => (selected as string[]).join(", ")}
+          input={<OutlinedInput label="Locations" />}
         >
           {locations.map((location) => (
             <MenuItem key={location} value={location}>
@@ -59,10 +65,12 @@ const FilterPanel: React.FC<FilterProps> = ({ locations, dustTypes, onFilterChan
           value={selectedDustTypes}
           onChange={handleDustTypeChange}
           renderValue={(selected) => (selected as string[]).join(", ")}
+          input={<OutlinedInput label="Dust Types" />}
         >
           {dustTypes.map((type) => (
             <MenuItem key={type} value={type}>
-              {type}
+              <Checkbox checked={selectedDustTypes.includes(type)} />
+              <ListItemText primary={type} />
             </MenuItem>
           ))}
         </Select>

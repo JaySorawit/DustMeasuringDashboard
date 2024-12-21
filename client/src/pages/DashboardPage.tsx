@@ -15,6 +15,7 @@ import {
     Tooltip,
     Legend
   } from 'chart.js';
+import Test from "../components/test";
   
   ChartJS.register(
     CategoryScale,
@@ -108,6 +109,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <Box>
+      <Test />
       <Filters
         locations={[...new Set(data.map((item) => item.location_id))]}
         dustTypes={[...new Set(data.map((item) => item.dust_type))]}
