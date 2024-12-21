@@ -1,19 +1,19 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import sequelize from '../database';
+import sequelize from '../database'; // Import the Sequelize instance
 
 interface DustMeasurementAttributes {
-    measurement_date: string;
-    measurement_time: string;
+    id: number;
+    measurement_datetime: Date;
     location_id: string;
     dust_value: number;
     dust_type: number;
 }
 
-type DustMeasurementCreationAttributes = Optional<DustMeasurementAttributes, 'dust_value'>;
+type DustMeasurementCreationAttributes = Optional<DustMeasurementAttributes, 'id'>;
 
 class DustMeasurement extends Model<DustMeasurementAttributes, DustMeasurementCreationAttributes> implements DustMeasurementAttributes {
-    public measurement_date!: string;
-    public measurement_time!: string;
+    public id!: number;
+    public measurement_datetime!: Date;
     public location_id!: string;
     public dust_value!: number;
     public dust_type!: number;
@@ -21,36 +21,33 @@ class DustMeasurement extends Model<DustMeasurementAttributes, DustMeasurementCr
 
 DustMeasurement.init(
     {
-        measurement_date: {
-            type: DataTypes.DATEONLY,
-            allowNull: false,
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
             primaryKey: true,
         },
-        measurement_time: {
-            type: DataTypes.TIME,
+        measurement_datetime: {
+            type: DataTypes.DATE,
             allowNull: false,
-            primaryKey: true,
         },
         location_id: {
             type: DataTypes.STRING,
             allowNull: false,
-            primaryKey: true,
         },
         dust_value: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
         },
         dust_type: {
             type: DataTypes.FLOAT,
             allowNull: false,
-            primaryKey: true,
-        }
+        },
     },
     {
         sequelize,
         modelName: 'DustMeasurement',
-        tableName: 'Dust_Measuring_Entity',  // Ensure the table name matches
-        timestamps: false
+        tableName: 'Dust_Measuring_Entity', // Ensure this matches the actual table name in your DB
+        timestamps: false, // Disable timestamps as your table doesn't use them
     }
 );
 
