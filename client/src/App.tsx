@@ -1,7 +1,7 @@
 // App.tsx
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import DateRangeIcon from '@mui/icons-material/DateRange';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { Outlet } from 'react-router-dom';
 import { AppProvider } from '@toolpad/core/react-router-dom';
@@ -23,7 +23,7 @@ export default function App() {
         {
           segment: 'MonthlyViewPage',
           title: 'Monthly report',
-          icon: <CalendarTodayIcon />,
+          icon: <DateRangeIcon />,
         },
         {
           segment: 'RepeatPointPage',
