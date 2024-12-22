@@ -1,26 +1,44 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-import DashboardPage from "./pages/DashboardPage";
-import ListPage from "./pages/ListPage";
-import { Box, Button } from "@mui/material";
+// App.tsx
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import TableViewIcon from '@mui/icons-material/TableView';
+import { Outlet } from 'react-router-dom';
+import { AppProvider } from '@toolpad/core/react-router-dom';
 
-const App: React.FC = () => {
-  return (
-    <Router>
-      <Box display="flex" justifyContent="center" mb={2}>
-        <Button component={Link} to="/" variant="contained" sx={{ mx: 1 }}>
-          Dashboard
-        </Button>
-        <Button component={Link} to="/list" variant="contained" sx={{ mx: 1 }}>
-          Data List
-        </Button>
-      </Box>
-      <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/list" element={<ListPage />} />
-      </Routes>
-    </Router>
-  );
+const BRANDING = {
+  title: 'Dust Measurement System',
+  logo: '',
 };
 
-export default App;
+export default function App() {
+  return (
+    <AppProvider
+      navigation={[
+        {
+          segment: 'AllPointPage',
+          title: 'All Point (Daily report)',
+          icon: <WarehouseIcon />,
+        },
+        {
+          segment: 'MonthlyViewPage',
+          title: 'Monthly report',
+          icon: <CalendarTodayIcon />,
+        },
+        {
+          segment: 'RepeatPointPage',
+          title: 'Repeat point',
+          icon: <BarChartIcon />,
+        },
+        {
+          segment: 'ListViewPage',
+          title: 'List view',
+          icon: <TableViewIcon />,
+        },
+      ]}
+      branding={BRANDING}
+    >
+      <Outlet />
+    </AppProvider>
+  );
+}
