@@ -1,4 +1,3 @@
-// App.tsx
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import DateRangeIcon from '@mui/icons-material/DateRange';

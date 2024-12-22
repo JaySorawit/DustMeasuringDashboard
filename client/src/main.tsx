@@ -1,4 +1,3 @@
-// index.tsx
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -12,26 +11,26 @@ import RepeatPointPage from './pages/RepeatPointPage';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />, // Root component with navigation
+    element: <App />,
     children: [
       {
         path: '',
         element: <Layout />,
         children: [
           {
-            path: 'AllPointPage', // Navigate to /AllPointPage
+            path: 'AllPointPage',
             element: <AllPointPage />,
           },
           {
-            path: 'MonthlyViewPage', // Navigate to /MonthlyViewPage
+            path: 'MonthlyViewPage',
             element: <MonthlyViewPage />,
           },
           {
-            path: 'RepeatPointPage', // Navigate to /RepeatPointPage
+            path: 'RepeatPointPage',
             element: <RepeatPointPage />,
           },
           {
-            path: 'ListViewPage', // Navigate to /ListViewPage
+            path: 'ListViewPage',
             element: <ListViewPage />,
           },
         ],
