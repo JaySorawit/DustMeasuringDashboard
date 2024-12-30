@@ -15,7 +15,7 @@ export default function App() {
     <AppProvider
       navigation={[
         {
-          segment: 'AllPointPage',
+          segment: '',
           title: 'All Point (Daily report)',
           icon: <WarehouseIcon />,
         },

@@ -18,7 +18,7 @@ const router = createBrowserRouter([
         element: <Layout />,
         children: [
           {
-            path: 'AllPointPage',
+            path: '',
             element: <AllPointPage />,
           },
           {
