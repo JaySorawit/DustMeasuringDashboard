@@ -95,8 +95,12 @@ function ListViewPage() {
   };
 
   if (loading) {
-    return <CircularProgress />;
-  }
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+      </div>
+    );
+  }  
 
   return (
     <>
