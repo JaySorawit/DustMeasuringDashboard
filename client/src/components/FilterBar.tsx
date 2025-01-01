@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     Button,
     Checkbox,
@@ -64,7 +64,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const handleDateChange = (newStartDate: Dayjs | null, newEndDate: Dayjs | null) => {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
-    // Do not call onDateChange yet, only when Apply button is clicked
   };
 
   const handleLocationChange = (event: SelectChangeEvent<string[]>) => {
@@ -83,7 +82,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setSelectedDustTypes(selectedDustTypes.length === dustTypes.length ? [] : dustTypes);
   };
 
-  // Apply filters when the button is clicked
   const applyFilters = () => {
     const filteredData = data.filter((item) => {
       const matchesLocation =
@@ -102,7 +100,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     });
 
     onFilter(filteredData);
-    onDateChange(startDate, endDate); // Pass updated date range back to parent only after clicking Apply Filters
+    onDateChange(startDate, endDate);
   };
 
   const isLocationIndeterminate =
