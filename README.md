@@ -20,28 +20,29 @@ DustMeasuringDashboard is a web-based application designed to monitor and visual
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/JaySorawit/DustMeasuringDashboard.git```
+   git clone https://github.com/JaySorawit/DustMeasuringDashboard.git
 2. **Navigate to the Project Directory:**
    ```bash
-   cd DustMeasuringDashboard```
+   cd DustMeasuringDashboard
 3. **Install Dependencies:**
   - Frontend:
   ```bash
     cd client
-    npm install```
+    npm install
   - Backend:
   ```bash
     cd server
     npm install```
 4. **Configure Environment Variables: Create a .env file in the server directory and specify the necessary environment variables:**
 env
-```DB_HOST=your_database_host
-DB_PORT=your_database_port_number
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-DB_DIALECT=your_database_dialect
-PORT=your_port_number```
+```bash
+   DB_HOST=your_database_host
+   DB_PORT=your_database_port_number
+   DB_USER=your_database_user
+   DB_PASSWORD=your_database_password
+   DB_NAME=your_database_name
+   DB_DIALECT=your_database_dialect
+   PORT=your_port_number```
 
 5. **Run the Application:**
 Backend:
