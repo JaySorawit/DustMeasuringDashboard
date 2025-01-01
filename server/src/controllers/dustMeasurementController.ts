@@ -3,6 +3,7 @@ import {
     getDustMeasurementData,
     createDustMeasurementData,
     getDustMeasurementDataByDateRange,
+    getDustMeasurementLocation,
 } from '../services/dustMeasurementService';
 
 // Get all dust measurements
@@ -44,6 +45,15 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
     }
 };
 
+// Get dust measurement locations
+export const getDustMeasurementLocationHandler = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const measurements = await getDustMeasurementLocation();
+        res.json(measurements);
+    } catch (error) {
+        res.status(500).json({ message: `Error fetching measurements: ${(error as Error).message}` });
+    }
+}
 
 // Create new dust measurement
 export const createDustMeasurement = async (req: Request, res: Response): Promise<void> => {
