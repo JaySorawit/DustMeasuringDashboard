@@ -22,17 +22,18 @@ function ListViewPage() {
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('location_id');
-  const initialStartDate: Dayjs = dayjs().startOf('month');
-  const initialEndDate: Dayjs = dayjs().endOf('month');
+  const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf('month'));
+  const [endDate, setEndDate] = useState<Dayjs>(dayjs().endOf('month'));
 
-  // Fetch all data from the API on component mount
+  // Fetch data whenever startDate or endDate changes
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const response = await axios.get("http://localhost:3000/api/dust-measurements/date-range", {
           params: {
-            startDate: initialStartDate.format("YYYY-MM-DD"),
-            endDate: initialEndDate.format("YYYY-MM-DD")
+            startDate: startDate.format("YYYY-MM-DD"),
+            endDate: endDate.format("YYYY-MM-DD")
           },
         });
 
@@ -40,7 +41,6 @@ function ListViewPage() {
         setData(fetchedData);
         setFilteredData(fetchedData);
 
-        // Extract unique locations dynamically
         const uniqueLocations: string[] = Array.from(new Set(fetchedData.map((item: DustMeasurement) => item.location_id)));
         setLocations(uniqueLocations);
 
@@ -52,12 +52,11 @@ function ListViewPage() {
     };
 
     fetchData();
-  }, []);
+  }, [startDate, endDate]); // Dependency on startDate and endDate
 
   // Memoize filtered data for performance
   const displayedData = useMemo(() => filteredData, [filteredData]);
 
-  // Sorting logic
   const handleRequestSort = (property: keyof DustMeasurement) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -77,14 +76,12 @@ function ListViewPage() {
     return array.sort(comparator);
   };
 
-  // Get the data for the current page
   const currentData = useMemo(() => {
     const sortedData = sortData(displayedData);
     const startIndex = page * rowsPerPage;
     return sortedData.slice(startIndex, startIndex + rowsPerPage);
   }, [displayedData, page, rowsPerPage, order, orderBy]);
 
-  // Pagination change handler
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
@@ -109,9 +106,13 @@ function ListViewPage() {
         locations={locations}
         dustTypes={dustTypes}
         data={data}
-        initialStartDate={initialStartDate}
-        initialEndDate={initialEndDate}
         onFilter={(filteredData) => setFilteredData(filteredData)}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+        onDateChange={(newStartDate, newEndDate) => {
+          if (newStartDate) setStartDate(newStartDate);
+          if (newEndDate) setEndDate(newEndDate);
+        }}
       />
       <TableContainer>
         <Table>
