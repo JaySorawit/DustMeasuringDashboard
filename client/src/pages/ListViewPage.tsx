@@ -18,12 +18,30 @@ function ListViewPage() {
   const [locations, setLocations] = useState<string[]>([]);
   const dustTypes = [0.1, 0.3, 0.5, 1.0];
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingLocations, setLoadingLocations] = useState<boolean>(true);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('location_id');
   const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf('month'));
   const [endDate, setEndDate] = useState<Dayjs>(dayjs().endOf('month'));
+
+  // Fetch locations on component mount
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        setLoadingLocations(true);
+        const response = await axios.get("http://localhost:3000/api/dust-measurements/locations");
+        setLocations(response.data); // Assume API returns an array of locations
+        setLoadingLocations(false);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        setLoadingLocations(false);
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   // Fetch data whenever startDate or endDate changes
   useEffect(() => {
@@ -39,11 +57,7 @@ function ListViewPage() {
 
         const fetchedData = response.data;
         setData(fetchedData);
-        setFilteredData(fetchedData);
-
-        const uniqueLocations: string[] = Array.from(new Set(fetchedData.map((item: DustMeasurement) => item.location_id)));
-        setLocations(uniqueLocations);
-
+        setFilteredData(fetchedData); // Initialize filtered data to full dataset
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -54,8 +68,12 @@ function ListViewPage() {
     fetchData();
   }, [startDate, endDate]); // Dependency on startDate and endDate
 
-  // Memoize filtered data for performance
-  const displayedData = useMemo(() => filteredData, [filteredData]);
+  // Apply filter only when data is loaded
+  useEffect(() => {
+    if (!loading) {
+      setFilteredData(data);
+    }
+  }, [data, loading]);
 
   const handleRequestSort = (property: keyof DustMeasurement) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -77,10 +95,10 @@ function ListViewPage() {
   };
 
   const currentData = useMemo(() => {
-    const sortedData = sortData(displayedData);
+    const sortedData = sortData(filteredData);
     const startIndex = page * rowsPerPage;
     return sortedData.slice(startIndex, startIndex + rowsPerPage);
-  }, [displayedData, page, rowsPerPage, order, orderBy]);
+  }, [filteredData, page, rowsPerPage, order, orderBy]);
 
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -91,13 +109,13 @@ function ListViewPage() {
     setPage(0); // Reset to first page when rows per page changes
   };
 
-  if (loading) {
+  if (loading || loadingLocations) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
         <CircularProgress />
       </div>
     );
-  }  
+  }
 
   return (
     <>
@@ -190,7 +208,7 @@ function ListViewPage() {
       <TablePagination
         rowsPerPageOptions={[20, 30, 50]}
         component="div"
-        count={displayedData.length}
+        count={filteredData.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

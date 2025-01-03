@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-    Button,
-    Checkbox,
-    FormControl,
-    InputLabel,
-    ListItemText,
-    MenuItem,
-    OutlinedInput,
-    SelectChangeEvent,
-    Select,
+  Button,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  OutlinedInput,
+  SelectChangeEvent,
+  Select,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -18,32 +18,32 @@ import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 
 interface DustMeasurement {
-    id: number;
-    measurement_datetime: string;
-    location_id: string;
-    dust_value: number;
-    dust_type: number;
+  id: number;
+  measurement_datetime: string;
+  location_id: string;
+  dust_value: number;
+  dust_type: number;
 }
 
 interface FilterBarProps {
-    locations: string[];
-    dustTypes: number[];
-    data: DustMeasurement[];
-    onFilter: (filteredData: DustMeasurement[]) => void;
-    initialStartDate?: Dayjs | null;
-    initialEndDate?: Dayjs | null;
-    onDateChange: (newStartDate: Dayjs | null, newEndDate: Dayjs | null) => void;
+  locations: string[];
+  dustTypes: number[];
+  data: DustMeasurement[];
+  onFilter: (filteredData: DustMeasurement[]) => void;
+  initialStartDate?: Dayjs | null;
+  initialEndDate?: Dayjs | null;
+  onDateChange: (newStartDate: Dayjs | null, newEndDate: Dayjs | null) => void;
 }
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
     },
+  },
 };
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -58,55 +58,62 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const [startDate, setStartDate] = useState<Dayjs | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
 
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([...locations]);
+  const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([...dustTypes]);
+
+  useEffect(() => {
+    // Apply filters initially when the component loads
+    applyFilters();
+  }, [selectedLocations, selectedDustTypes, startDate, endDate]);
 
   const handleDateChange = (newStartDate: Dayjs | null, newEndDate: Dayjs | null) => {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
+    onDateChange(newStartDate, newEndDate); // Notify parent of date change
   };
 
   const handleLocationChange = (event: SelectChangeEvent<string[]>) => {
-    setSelectedLocations(typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value);
+    const value = event.target.value as string[];
+    if (value.includes("all")) {
+      setSelectedLocations(
+        selectedLocations.length === locations.length ? [] : [...locations]
+      );
+    } else {
+      setSelectedLocations(value);
+    }
   };
 
   const handleDustTypeChange = (event: SelectChangeEvent<number[]>) => {
-    setSelectedDustTypes(event.target.value as number[]);
-  };
-
-  const handleSelectAllLocations = () => {
-    setSelectedLocations(selectedLocations.length === locations.length ? [] : locations);
-  };
-
-  const handleSelectAllDustTypes = () => {
-    setSelectedDustTypes(selectedDustTypes.length === dustTypes.length ? [] : dustTypes);
+    const value = event.target.value as number[];
+    if (value.includes(-1)) {
+      setSelectedDustTypes(
+        selectedDustTypes.length === dustTypes.length ? [] : [...dustTypes]
+      );
+    } else {
+      setSelectedDustTypes(value);
+    }
   };
 
   const applyFilters = () => {
-    const filteredData = data.filter((item) => {
+    const filtered = data.filter((item) => {
       const matchesLocation =
         selectedLocations.length === 0 || selectedLocations.includes(item.location_id);
       const matchesDustType =
         selectedDustTypes.length === 0 || selectedDustTypes.includes(item.dust_type);
       const matchesDate =
-        !startDate ||
-        dayjs(item.measurement_datetime).isBetween(
-          dayjs(startDate).startOf("day"),
-          dayjs(endDate).endOf("day"),
-          null,
-          "[]"
-        );
+        (!startDate && !endDate) ||
+        (startDate &&
+          endDate &&
+          dayjs(item.measurement_datetime).isBetween(
+            startDate.startOf("day"),
+            endDate.endOf("day"),
+            null,
+            "[]"
+          ));
       return matchesLocation && matchesDustType && matchesDate;
     });
-
-    onFilter(filteredData);
-    onDateChange(startDate, endDate);
+    onFilter(filtered); // Notify parent with filtered data
   };
-
-  const isLocationIndeterminate =
-    selectedLocations.length > 0 && selectedLocations.length < locations.length;
-  const isDustTypeIndeterminate =
-    selectedDustTypes.length > 0 && selectedDustTypes.length < dustTypes.length;
 
   return (
     <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
@@ -135,14 +142,19 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onChange={handleLocationChange}
           input={<OutlinedInput label="Locations" />}
           renderValue={(selected) =>
-            selected.length === locations.length ? "Select All" : selected.join(", ")
+            selected.length === locations.length
+              ? "All Locations"
+              : selected.join(", ")
           }
           MenuProps={MenuProps}
         >
-          <MenuItem onClick={handleSelectAllLocations}>
+          <MenuItem value="all">
             <Checkbox
               checked={selectedLocations.length === locations.length}
-              indeterminate={isLocationIndeterminate}
+              indeterminate={
+                selectedLocations.length > 0 &&
+                selectedLocations.length < locations.length
+              }
             />
             <ListItemText primary="Select All" />
           </MenuItem>
@@ -155,7 +167,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ m: 1, width: 150 }}>
+      <FormControl sx={{ m: 1, width: 200 }}>
         <InputLabel id="dust-type-filter-label">Dust Types</InputLabel>
         <Select
           labelId="dust-type-filter-label"
@@ -165,14 +177,19 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onChange={handleDustTypeChange}
           input={<OutlinedInput label="Dust Types" />}
           renderValue={(selected) =>
-            selected.length === dustTypes.length ? "Select All" : selected.join(", ")
+            selected.length === dustTypes.length
+              ? "All Dust Types"
+              : selected.map((type) => `Type ${type}`).join(", ")
           }
           MenuProps={MenuProps}
         >
-          <MenuItem onClick={handleSelectAllDustTypes}>
+          <MenuItem value={-1}>
             <Checkbox
               checked={selectedDustTypes.length === dustTypes.length}
-              indeterminate={isDustTypeIndeterminate}
+              indeterminate={
+                selectedDustTypes.length > 0 &&
+                selectedDustTypes.length < dustTypes.length
+              }
             />
             <ListItemText primary="Select All" />
           </MenuItem>
@@ -185,11 +202,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <div style={{ marginTop: "1rem" }}>
+      {/* <div style={{ marginTop: "1rem" }}>
         <Button variant="contained" color="primary" onClick={applyFilters}>
           Apply Filters
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };
