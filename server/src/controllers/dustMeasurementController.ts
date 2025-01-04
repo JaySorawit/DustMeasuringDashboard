@@ -23,7 +23,7 @@ export const getDustMeasurements = async (req: Request, res: Response): Promise<
 // Get dust measurements by date range
 export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate, locations, dustTypes } = req.query;
 
         if (!startDate || !endDate) {
             res.status(400).json({ message: 'Start date and end date are required.' });
@@ -38,7 +38,18 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
             return;
         }
 
-        const measurements = await getDustMeasurementDataByDateRange(parsedStartDate, parsedEndDate);
+        // Parse locations and dustTypes if provided
+        const locationArray = locations ? JSON.parse(locations as string) : [];
+        const dustTypeArray = dustTypes ? JSON.parse(dustTypes as string) : [];
+
+        // Fetch data with filters
+        const measurements = await getDustMeasurementDataByDateRange(
+            parsedStartDate,
+            parsedEndDate,
+            locationArray,
+            dustTypeArray
+        );
+
         res.json(measurements);
     } catch (error) {
         res.status(500).json({ message: `Error fetching measurements: ${(error as Error).message}` });

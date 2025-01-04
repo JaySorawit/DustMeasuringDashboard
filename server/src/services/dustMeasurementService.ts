@@ -21,15 +21,35 @@ export const getDustMeasurementData = async () => {
 };
 
 // Fetch dust measurements between a given date range
-export const getDustMeasurementDataByDateRange = async (startDate: Date, endDate: Date) => {
+export const getDustMeasurementDataByDateRange = async (
+    startDate: Date,
+    endDate: Date,
+    locations: string[],
+    dustTypes: number[]
+) => {
     try {
+        const whereClause: any = {
+            measurement_datetime: {
+                [Op.between]: [startDate, endDate],
+            },
+        };
+
+        if (locations.length > 0) {
+            whereClause.location_id = {
+                [Op.in]: locations,
+            };
+        }
+
+        if (dustTypes.length > 0) {
+            whereClause.dust_type = {
+                [Op.in]: dustTypes,
+            };
+        }
+
         const measurements = await DustMeasurement.findAll({
-            where: {
-                measurement_datetime: {
-                    [Op.between]: [startDate, endDate],
-                }
-            }
+            where: whereClause,
         });
+
         return measurements;
     } catch (error) {
         throw new Error(`Error fetching dust measurements: ${(error as Error).message}`);
