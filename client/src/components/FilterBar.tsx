@@ -9,6 +9,7 @@ import {
   OutlinedInput,
   SelectChangeEvent,
   Select,
+  CircularProgress,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -241,6 +242,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           color="primary"
           onClick={applyFilters}
           disabled={loading}
+          startIcon={loading && <CircularProgress size={20} />}
         >
           {loading ? "Applying..." : "Apply Filters"}
         </Button>
