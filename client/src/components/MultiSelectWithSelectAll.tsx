@@ -22,7 +22,7 @@ const MultiSelectWithSelectAll: React.FC = () => {
 
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
 
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: Option[]) => {
+  const handleChange = (_: React.ChangeEvent<{}>, newValue: Option[]) => {
     const selectAllOption = newValue.find((option) => option.label === "Select All");
     if (selectAllOption) {
       if (selectedOptions.length === options.length) {

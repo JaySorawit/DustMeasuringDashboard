@@ -1,126 +1,166 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-    Button,
-    Checkbox,
-    FormControl,
-    InputLabel,
-    ListItemText,
-    MenuItem,
-    OutlinedInput,
-    SelectChangeEvent,
-    Select,
+  Button,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  OutlinedInput,
+  SelectChangeEvent,
+  Select,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import axios from "axios";
+
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 
 interface DustMeasurement {
-    id: number;
-    measurement_datetime: string;
-    location_id: string;
-    dust_value: number;
-    dust_type: number;
+  id: number;
+  measurement_datetime: string;
+  location_id: string;
+  dust_value: number;
+  dust_type: number;
 }
 
 interface FilterBarProps {
-    locations: string[];
-    dustTypes: number[];
-    data: DustMeasurement[];
-    onFilter: (filteredData: DustMeasurement[]) => void;
-    initialStartDate?: Dayjs | null;
-    initialEndDate?: Dayjs | null;
-    onDateChange: (newStartDate: Dayjs | null, newEndDate: Dayjs | null) => void;
+  dustTypes: number[];
+  onFilter: (filteredData: DustMeasurement[]) => void;
+  initialStartDate?: Dayjs | null;
+  initialEndDate?: Dayjs | null;
 }
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
     },
+  },
 };
 
 const FilterBar: React.FC<FilterBarProps> = ({
-  locations,
   dustTypes,
-  data,
   onFilter,
   initialStartDate = null,
   initialEndDate = null,
-  onDateChange,
 }) => {
   const [startDate, setStartDate] = useState<Dayjs | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
-
+  const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleDateChange = (newStartDate: Dayjs | null, newEndDate: Dayjs | null) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
+  // Inside useEffect for fetching locations, sort the locations alphabetically
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/dust-measurements/locations"
+        );
+        const sortedLocations = response.data.sort((a: string, b: string) =>
+          a.localeCompare(b, undefined, { numeric: true })
+        );
+        setLocations(sortedLocations);
+        setSelectedLocations(sortedLocations);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  useEffect(() => {
+    const sortedDustTypes = [...dustTypes].sort((a, b) => a - b);
+    setSelectedDustTypes(sortedDustTypes);
+  }, [dustTypes]);
+
+  // Fetch data based on filters
+  const fetchFilteredData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/dust-measurements/date-range",
+        {
+          params: {
+            startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
+            endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+            locations: JSON.stringify(selectedLocations),
+            dustTypes: JSON.stringify(selectedDustTypes),
+          },
+        }
+      );
+
+      onFilter(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLocationChange = (event: SelectChangeEvent<string[]>) => {
-    setSelectedLocations(typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value);
+    const value = event.target.value as string[];
+    if (value.includes("all")) {
+      setSelectedLocations(
+        selectedLocations.length === locations.length ? [] : [...locations]
+      );
+    } else {
+      setSelectedLocations(value);
+    }
   };
 
   const handleDustTypeChange = (event: SelectChangeEvent<number[]>) => {
-    setSelectedDustTypes(event.target.value as number[]);
-  };
-
-  const handleSelectAllLocations = () => {
-    setSelectedLocations(selectedLocations.length === locations.length ? [] : locations);
-  };
-
-  const handleSelectAllDustTypes = () => {
-    setSelectedDustTypes(selectedDustTypes.length === dustTypes.length ? [] : dustTypes);
+    const value = event.target.value as number[];
+    if (value.includes(-1)) {
+      setSelectedDustTypes(
+        selectedDustTypes.length === dustTypes.length ? [] : [...dustTypes]
+      );
+    } else {
+      setSelectedDustTypes(value);
+    }
   };
 
   const applyFilters = () => {
-    const filteredData = data.filter((item) => {
-      const matchesLocation =
-        selectedLocations.length === 0 || selectedLocations.includes(item.location_id);
-      const matchesDustType =
-        selectedDustTypes.length === 0 || selectedDustTypes.includes(item.dust_type);
-      const matchesDate =
-        !startDate ||
-        dayjs(item.measurement_datetime).isBetween(
-          dayjs(startDate).startOf("day"),
-          dayjs(endDate).endOf("day"),
-          null,
-          "[]"
-        );
-      return matchesLocation && matchesDustType && matchesDate;
-    });
-
-    onFilter(filteredData);
-    onDateChange(startDate, endDate);
+    fetchFilteredData();
   };
 
-  const isLocationIndeterminate =
-    selectedLocations.length > 0 && selectedLocations.length < locations.length;
-  const isDustTypeIndeterminate =
-    selectedDustTypes.length > 0 && selectedDustTypes.length < dustTypes.length;
-
   return (
-    <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
+    <div
+      style={{
+        display: "flex",
+        marginBottom: "2rem",
+        flexWrap: "wrap",
+        justifyContent: "center",
+      }}
+    >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem" }}>
+        <div
+          style={{
+            width: "320px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            marginRight: "0.5rem",
+          }}
+        >
           <DatePicker
             label="Start Date"
             value={startDate}
-            onChange={(newValue) => handleDateChange(newValue, endDate)}
+            onChange={(newValue) => setStartDate(newValue)}
           />
           <DatePicker
             label="End Date"
             value={endDate}
-            onChange={(newValue) => handleDateChange(startDate, newValue)}
+            onChange={(newValue) => setEndDate(newValue)}
           />
         </div>
       </LocalizationProvider>
@@ -135,14 +175,19 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onChange={handleLocationChange}
           input={<OutlinedInput label="Locations" />}
           renderValue={(selected) =>
-            selected.length === locations.length ? "Select All" : selected.join(", ")
+            selected.length === locations.length
+              ? "All Locations"
+              : selected.join(", ")
           }
           MenuProps={MenuProps}
         >
-          <MenuItem onClick={handleSelectAllLocations}>
+          <MenuItem value="all">
             <Checkbox
               checked={selectedLocations.length === locations.length}
-              indeterminate={isLocationIndeterminate}
+              indeterminate={
+                selectedLocations.length > 0 &&
+                selectedLocations.length < locations.length
+              }
             />
             <ListItemText primary="Select All" />
           </MenuItem>
@@ -155,7 +200,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ m: 1, width: 150 }}>
+      <FormControl sx={{ m: 1, width: 200 }}>
         <InputLabel id="dust-type-filter-label">Dust Types</InputLabel>
         <Select
           labelId="dust-type-filter-label"
@@ -165,14 +210,19 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onChange={handleDustTypeChange}
           input={<OutlinedInput label="Dust Types" />}
           renderValue={(selected) =>
-            selected.length === dustTypes.length ? "Select All" : selected.join(", ")
+            selected.length === dustTypes.length
+              ? "All Dust Types"
+              : selected.map((type) => `Type ${type}`).join(", ")
           }
           MenuProps={MenuProps}
         >
-          <MenuItem onClick={handleSelectAllDustTypes}>
+          <MenuItem value={-1}>
             <Checkbox
               checked={selectedDustTypes.length === dustTypes.length}
-              indeterminate={isDustTypeIndeterminate}
+              indeterminate={
+                selectedDustTypes.length > 0 &&
+                selectedDustTypes.length < dustTypes.length
+              }
             />
             <ListItemText primary="Select All" />
           </MenuItem>
@@ -186,8 +236,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
       </FormControl>
 
       <div style={{ marginTop: "1rem" }}>
-        <Button variant="contained" color="primary" onClick={applyFilters}>
-          Apply Filters
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={applyFilters}
+          disabled={loading}
+        >
+          {loading ? "Applying..." : "Apply Filters"}
         </Button>
       </div>
     </div>

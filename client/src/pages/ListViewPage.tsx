@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import React, { useState, useMemo } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import FilterBar from "../components/FilterBar";
-import { CircularProgress, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
+import { TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
 
 interface DustMeasurement {
   id: number;
@@ -13,49 +12,14 @@ interface DustMeasurement {
 }
 
 function ListViewPage() {
-  const [data, setData] = useState<DustMeasurement[]>([]);
   const [filteredData, setFilteredData] = useState<DustMeasurement[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
   const dustTypes = [0.1, 0.3, 0.5, 1.0];
-  const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('location_id');
-  const [startDate, setStartDate] = useState<Dayjs>(dayjs().startOf('month'));
-  const [endDate, setEndDate] = useState<Dayjs>(dayjs().endOf('month'));
-
-  // Fetch data whenever startDate or endDate changes
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get("http://localhost:3000/api/dust-measurements/date-range", {
-          params: {
-            startDate: startDate.format("YYYY-MM-DD"),
-            endDate: endDate.format("YYYY-MM-DD")
-          },
-        });
-
-        const fetchedData = response.data;
-        setData(fetchedData);
-        setFilteredData(fetchedData);
-
-        const uniqueLocations: string[] = Array.from(new Set(fetchedData.map((item: DustMeasurement) => item.location_id)));
-        setLocations(uniqueLocations);
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [startDate, endDate]); // Dependency on startDate and endDate
-
-  // Memoize filtered data for performance
-  const displayedData = useMemo(() => filteredData, [filteredData]);
+  const [startDate] = useState<Dayjs>(dayjs().startOf('month'));
+  const [endDate] = useState<Dayjs>(dayjs().endOf('month'));
 
   const handleRequestSort = (property: keyof DustMeasurement) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -64,7 +28,45 @@ function ListViewPage() {
   };
 
   const sortData = (array: DustMeasurement[]) => {
+    const naturalCompare = (a: string, b: string) => {
+      const re = /(\D+)(\d+)/g;
+      const aParts = [];
+      const bParts = [];
+    
+      // Extract text and number parts of the location_id
+      let match;
+      while ((match = re.exec(a)) !== null) {
+        aParts.push(match[1], parseInt(match[2], 10));
+      }
+      while ((match = re.exec(b)) !== null) {
+        bParts.push(match[1], parseInt(match[2], 10));
+      }
+  
+      // Compare parts by text and number alternately
+      const maxLen = Math.max(aParts.length, bParts.length);
+      for (let i = 0; i < maxLen; i++) {
+        const partA = aParts[i] || "";
+        const partB = bParts[i] || "";
+        if (partA !== partB) {
+          // If part is text, compare lexicographically
+          if (typeof partA === "string" && typeof partB === "string") {
+            return partA.localeCompare(partB);
+          }
+          // If part is number, compare numerically
+          return Number(partA) - Number(partB);
+        }
+      }
+      return 0;
+    };
+  
     const comparator = (a: DustMeasurement, b: DustMeasurement) => {
+      if (orderBy === "location_id") {
+        return order === "asc"
+          ? naturalCompare(a.location_id, b.location_id)
+          : naturalCompare(b.location_id, a.location_id);
+      }
+  
+      // Default sorting for other fields
       if (a[orderBy as keyof DustMeasurement] < b[orderBy as keyof DustMeasurement]) {
         return order === 'asc' ? -1 : 1;
       }
@@ -73,46 +75,34 @@ function ListViewPage() {
       }
       return 0;
     };
+  
     return array.sort(comparator);
   };
+  
 
   const currentData = useMemo(() => {
-    const sortedData = sortData(displayedData);
+    const sortedData = sortData(filteredData);
     const startIndex = page * rowsPerPage;
     return sortedData.slice(startIndex, startIndex + rowsPerPage);
-  }, [displayedData, page, rowsPerPage, order, orderBy]);
+  }, [filteredData, page, rowsPerPage, order, orderBy]);
 
-  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
+  const handleChangePage = (_: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Reset to first page when rows per page changes
+    setPage(0);
   };
-
-  if (loading) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <CircularProgress />
-      </div>
-    );
-  }  
 
   return (
     <>
       <h2>List View Page</h2>
       <FilterBar
-        locations={locations}
         dustTypes={dustTypes}
-        data={data}
         onFilter={(filteredData) => setFilteredData(filteredData)}
         initialStartDate={startDate}
         initialEndDate={endDate}
-        onDateChange={(newStartDate, newEndDate) => {
-          if (newStartDate) setStartDate(newStartDate);
-          if (newEndDate) setEndDate(newEndDate);
-        }}
       />
       <TableContainer>
         <Table>
@@ -190,7 +180,7 @@ function ListViewPage() {
       <TablePagination
         rowsPerPageOptions={[20, 30, 50]}
         component="div"
-        count={displayedData.length}
+        count={filteredData.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
