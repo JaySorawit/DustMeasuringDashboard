@@ -2,14 +2,7 @@ import React, { useState, useMemo } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import FilterBar from "../components/FilterBar";
 import { TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
-
-interface DustMeasurement {
-  id: number;
-  location_id: string;
-  measurement_datetime: string;
-  dust_value: number;
-  dust_type: number;
-}
+import { DustMeasurement } from "../types/types";
 
 function ListViewPage() {
   const [filteredData, setFilteredData] = useState<DustMeasurement[]>([]);

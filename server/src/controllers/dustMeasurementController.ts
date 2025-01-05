@@ -38,6 +38,9 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
             return;
         }
 
+        // Adjust dates to handle full day ranges
+        parsedEndDate.setHours(23, 59, 59, 999);
+
         // Parse locations and dustTypes if provided
         const locationArray = locations ? JSON.parse(locations as string) : [];
         const dustTypeArray = dustTypes ? JSON.parse(dustTypes as string) : [];
