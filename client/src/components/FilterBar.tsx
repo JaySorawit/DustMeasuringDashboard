@@ -18,6 +18,7 @@ import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
 
 import isBetween from "dayjs/plugin/isBetween";
+import API_BASE_URL from "../configs/apiConfig";
 dayjs.extend(isBetween);
 
 interface DustMeasurement {
@@ -64,7 +65,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/dust-measurements/locations"
+          `${API_BASE_URL}/api/dust-measurements/locations`
         );
         const sortedLocations = response.data.sort((a: string, b: string) =>
           a.localeCompare(b, undefined, { numeric: true })
@@ -89,7 +90,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:3000/api/dust-measurements/date-range",
+        `${API_BASE_URL}/api/dust-measurements/date-range`,
         {
           params: {
             startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
