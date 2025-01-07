@@ -105,9 +105,9 @@ const AllPointPage: React.FC = () => {
         </Button>
       </Box>
 
-<Typography variant="h6" gutterBottom>
+{/* <Typography variant="h6" gutterBottom>
   filteredData = {JSON.stringify(filteredData)}
-</Typography>
+</Typography> */}
     </Box>
   );
 };
