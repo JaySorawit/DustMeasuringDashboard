@@ -1,0 +1,49 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main    # Trigger when code is pushed to the 'main' branch
+  pull_request:
+    branches:
+      - main    # Trigger when a PR is created that targets the 'main' branch
+
+jobs:
+  # Job 1: Test
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Or whichever Node.js version you're using
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test  # This will run your tests if you have them
+
+  # Job 2: Build and Deploy (Production)
+  deploy:
+    needs: test  # Only runs if 'test' job is successful
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Image
+        run: docker build -t my-app .
+
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to production server"
+          # Add your deployment commands here, e.g., SSH to your server
