@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE_URL=http://backend:3000
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mssql
+      DB_PORT: 1433
+      DB_USER: admin
+      DB_PASSWORD: 1234
+      DB_NAME: Senior_Project
+      DB_DIALECT: mssql
+    depends_on:
+      - mssql
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    ports:
+      - "1433:1433"  # Expose MSSQL on port 1433
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "1234"
+      MSSQL_PID: "Express"
