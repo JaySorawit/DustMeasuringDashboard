@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import FilterBar from "../components/FilterBar";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { DustMeasurement } from "../types/types";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
