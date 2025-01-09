@@ -1,10 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import dustMeasurementRoutes from './routes/dustMeasurementRoutes';
 import roomDustSafetyLimitsRoutes from './routes/roomDustSafetyLimitsRoutes';
-
-dotenv.config(); // Load environment variables from .env file
 
 // Initialize Express app
 const app = express();
