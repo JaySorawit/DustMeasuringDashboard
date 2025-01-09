@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import dustMeasurementRoutes from './routes/dustMeasurementRoutes';
+import roomDustSafetyLimitsRoutes from './routes/roomDustSafetyLimitsRoutes';
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 
 // Define API routes
 app.use('/api/dust-measurements', dustMeasurementRoutes);
+app.use('/api/room-management', roomDustSafetyLimitsRoutes);
 
 // Export the app for server.ts
 export default app;

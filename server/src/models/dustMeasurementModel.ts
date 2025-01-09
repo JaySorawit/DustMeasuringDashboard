@@ -2,26 +2,43 @@ import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../database'; // Import the Sequelize instance
 
 interface DustMeasurementAttributes {
-    id: number;
+    measurement_id: number;
     measurement_datetime: Date;
-    location_id: string;
-    dust_value: number;
-    dust_type: number;
+    room: string;
+    location_name: string;
+    count: number;
+    um01: number;
+    um03: number;
+    um05: number;
+    running_state: number;
+    alarm_high: number;
 }
 
-type DustMeasurementCreationAttributes = Optional<DustMeasurementAttributes, 'id'>;
+type DustMeasurementCreationAttributes = Optional<DustMeasurementAttributes, 'measurement_id'>;
 
 class DustMeasurement extends Model<DustMeasurementAttributes, DustMeasurementCreationAttributes> implements DustMeasurementAttributes {
-    public id!: number;
+    public measurement_id!: number;
     public measurement_datetime!: Date;
-    public location_id!: string;
-    public dust_value!: number;
-    public dust_type!: number;
+    public room!: string;
+    public location_name!: string;
+    public count!: number;
+    public um01!: number;
+    public um03!: number;
+    public um05!: number;
+    public running_state!: number;
+    public alarm_high!: number;
+
+    public static associate(models: any) {
+        DustMeasurement.belongsTo(models.RoomDustSafetyLimits, {
+            foreignKey: 'room',
+            targetKey: 'room',
+        });
+    }
 }
 
 DustMeasurement.init(
     {
-        id: {
+        measurement_id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
@@ -30,24 +47,47 @@ DustMeasurement.init(
             type: DataTypes.DATE,
             allowNull: false,
         },
-        location_id: {
-            type: DataTypes.STRING,
-            allowNull: false,
+        room: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            references: {
+                model: 'RoomDustSafetyLimits',
+                key: 'room',
+            },
         },
-        dust_value: {
+        location_name: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
+        count: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
-        dust_type: {
-            type: DataTypes.FLOAT,
-            allowNull: false,
+        um01: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        um03: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        um05: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        running_state: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        alarm_high: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
         },
     },
     {
         sequelize,
         modelName: 'DustMeasurement',
-        tableName: 'Dust_Measuring_Entity', // Ensure this matches the actual table name in your DB
-        timestamps: false, // Disable timestamps as your table doesn't use them
+        tableName: 'DustMeasurements',
     }
 );
 

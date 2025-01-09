@@ -7,9 +7,14 @@ const port = process.env.PORT || 3000;
 // Start the server after ensuring database connection
 (async () => {
     try {
-        // Sync Sequelize models with the database
-        await sequelize.sync({ alter: true });
-        console.log('Database synchronized successfully!');
+        // Ensure that the database connection works
+        await sequelize.authenticate();
+        console.log('Database connected successfully!');
+
+        // Sync database structure if necessary
+        await sequelize.sync({ alter: false })
+        .then(() => console.log('Database structure checked!'))
+        .catch((error) => console.error('Error syncing database:', error));   
 
         // Start Express server
         app.listen(port, () => {

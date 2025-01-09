@@ -7,7 +7,7 @@ import {
 } from '../services/dustMeasurementService';
 
 // Get all dust measurements
-export const getDustMeasurements = async (req: Request, res: Response): Promise<void> => {
+export const getDustMeasurementsHandler = async (req: Request, res: Response): Promise<void> => {
     try {
         const measurements = await getDustMeasurementData();
         res.status(200).json(measurements);
@@ -70,20 +70,40 @@ export const getDustMeasurementLocationHandler = async (req: Request, res: Respo
 }
 
 // Create new dust measurement
-export const createDustMeasurement = async (req: Request, res: Response): Promise<void> => {
+export const createDustMeasurementHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { measurement_datetime, location_id, dust_value, dust_type } = req.body;
+        const { measurement_datetime, room, location_name, count, um01, um03, um05, running_state, alarm_high } = req.body;
 
-        if (!measurement_datetime || !location_id || dust_value == null || dust_type == null) {
-            res.status(400).json({ message: 'Missing required fields' });
+        // List of required fields
+        const requiredFields = [
+            { field: measurement_datetime, name: 'measurement_datetime' },
+            { field: room, name: 'room' },
+            { field: location_name, name: 'location_name' },
+            { field: count, name: 'count' },
+            { field: um01, name: 'um01' },
+            { field: um03, name: 'um03' },
+            { field: um05, name: 'um05' },
+            { field: running_state, name: 'running_state' },
+            { field: alarm_high, name: 'alarm_high' }
+        ];
+
+        // Check for missing fields
+        const missingField = requiredFields.find(({ field }) => field === undefined || field === null);
+        if (missingField) {
+            res.status(400).json({ message: `Missing required field: ${missingField.name}` });
             return;
         }
 
         const newMeasurement = await createDustMeasurementData({
             measurement_datetime,
-            location_id,
-            dust_value,
-            dust_type,
+            room,
+            location_name,
+            count,
+            um01,
+            um03,
+            um05,
+            running_state,
+            alarm_high
         });
 
         res.status(201).json(newMeasurement);

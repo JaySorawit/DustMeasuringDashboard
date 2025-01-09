@@ -20,14 +20,4 @@ const sequelize = new Sequelize({
 
 console.log('DB_HOST:', process.env.DB_HOST);
 
-(async () => {
-    try {
-        await sequelize.authenticate();
-        console.log('Database connected successfully!');
-    } catch (err) {
-        console.error('Database connection failed:', err);
-        process.exit(1);
-    }
-})();
-
 export default sequelize;

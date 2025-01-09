@@ -2,11 +2,15 @@ import DustMeasurement from '../models/dustMeasurementModel';
 import { Op, fn, col } from 'sequelize';
 
 interface DustMeasurementInput {
-    id?: number;
     measurement_datetime: Date;
-    location_id: string;
-    dust_value: number;
-    dust_type: number;
+    room: string;
+    location_name: string;
+    count: number;
+    um01: number;
+    um03: number;
+    um05: number;
+    running_state: number;
+    alarm_high: number;
 }
 
 // Fetch all dust measurements
@@ -20,11 +24,11 @@ export const getDustMeasurementData = async () => {
     }
 };
 
-// Fetch dust measurements between a given date range
+// Fetch dust measurements between a given date range and multiple rooms
 export const getDustMeasurementDataByDateRange = async (
     startDate: Date,
     endDate: Date,
-    locations: string[],
+    rooms: string[],
     dustTypes: number[]
 ) => {
     try {
@@ -34,20 +38,25 @@ export const getDustMeasurementDataByDateRange = async (
             },
         };
 
-        if (locations.length > 0) {
-            whereClause.location_id = {
-                [Op.in]: locations,
+        if (rooms.length > 0) {
+            whereClause.room = {
+                [Op.in]: rooms,
             };
         }
 
         if (dustTypes.length > 0) {
-            whereClause.dust_type = {
+            whereClause.running_state = {
                 [Op.in]: dustTypes,
             };
         }
 
         const measurements = await DustMeasurement.findAll({
             where: whereClause,
+            attributes: [
+                [fn('DISTINCT', col('location_name')), 'location_name']
+            ],
+            order: [['location_name', 'ASC']],
+            raw: true,
         });
 
         return measurements;
@@ -61,23 +70,26 @@ export const getDustMeasurementLocation = async () => {
     try {
         const locations = await DustMeasurement.findAll({
             attributes: [
-                [fn('DISTINCT', col('location_id')), 'location_id']
+                [fn('DISTINCT', col('location_name')), 'location_name'],
             ],
-            order: [['location_id', 'ASC']],
+            order: [['location_name', 'ASC']],
             raw: true,
         });
-        return locations.map(location => location.location_id);
+        return locations.map(location => location.location_name);
     } catch (error) {
         throw new Error(`Error fetching dust measurement locations: ${(error as Error).message}`);
     }
 };
 
 // Create a new dust measurement data
-export const createDustMeasurementData = async (data: DustMeasurementInput) => {
+export const createDustMeasurementData = async (data: Omit<DustMeasurementInput, 'measurement_id'>) => {
     try {
         const newMeasurement = await DustMeasurement.create(data);
         return newMeasurement;
     } catch (error) {
-        throw new Error(`Error creating dust measurement: ${(error as Error).message}`);
+        console.error('Error creating dust measurement:', error);
+        throw new Error(
+            `Error creating dust measurement: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
     }
 };

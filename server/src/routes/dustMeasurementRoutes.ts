@@ -1,16 +1,17 @@
 import express from 'express';
 import {
-    getDustMeasurements,
-    createDustMeasurement,
+    getDustMeasurementsHandler,
+    createDustMeasurementHandler,
     getDustMeasurementDataByDateRangeHandler,
     getDustMeasurementLocationHandler,
 } from '../controllers/dustMeasurementController';
 
 const router = express.Router();
 
-router.get('/', getDustMeasurements);  // For all measurements
+// Define API routes for Dust Measurements
+router.get('/', getDustMeasurementsHandler);  // For all measurements
 router.get('/date-range', getDustMeasurementDataByDateRangeHandler); // For measurements by date range
 router.get('/locations', getDustMeasurementLocationHandler); // For search location
-router.post('/', createDustMeasurement); // To create new measurement
+router.post('/', createDustMeasurementHandler); // To create new measurement
 
 export default router;
