@@ -7,6 +7,7 @@ import AllPointPage from './pages/AllPointPage';
 import ListViewPage from './pages/ListViewPage';
 import MonthlyViewPage from './pages/MonthlyViewPage';
 import RepeatPointPage from './pages/RepeatPointPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
             path: 'ListViewPage',
             element: <ListViewPage />,
           },
+          {
+            path: '*',
+            element: <NotFoundPage />
+          }
         ],
       },
     ],
