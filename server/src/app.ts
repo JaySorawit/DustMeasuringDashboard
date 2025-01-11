@@ -7,7 +7,9 @@ import roomDustSafetyLimitsRoutes from './routes/roomDustSafetyLimitsRoutes';
 const app = express();
 
 // Middleware
-app.use(cors()); // Allow cross-origin requests
+app.use(cors({
+    origin: 'http://52.64.110.28'
+  }));
 app.use(express.json()); // Parse incoming JSON requests
 
 // Root route
