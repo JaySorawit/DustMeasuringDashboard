@@ -135,6 +135,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
     fetchFilteredData();
   };
 
+  console.log("API_BASE_URL", API_BASE_URL);
+
   return (
     <div
       style={{
