@@ -1,4 +1,4 @@
-name: CI/CD - Deploy Backend to AWS EC2 with Docker
+name: CI/CD - Deploy Backend and Frontend to AWS EC2 with Docker
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Deploy to EC2 via SSH
+    # Step 2: Set up SSH for EC2 deployment
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -23,25 +23,47 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         port: 22
         script: |
-          # Navigate to the project directory or clone the repository if needed
-          cd /home/ubuntu/DustMeasuringDashboard || git clone https://github.com/JaySorawit/DustMeasuringDashboard.git /home/ubuntu/DustMeasuringDashboard && cd /home/ubuntu/DustMeasuringDashboard
+          # Ensure Docker is installed and running
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+
+          # Navigate to the project directory or clone it
+          PROJECT_DIR="/home/ubuntu/DustMeasuringDashboard"
+          if [ ! -d "$PROJECT_DIR" ]; then
+            git clone https://github.com/JaySorawit/DustMeasuringDashboard.git $PROJECT_DIR
+          fi
+          cd $PROJECT_DIR
           git pull origin main
 
-          # Build the Docker image
+          # Backend Deployment
           cd server
           docker build -t dustmeasuringdashboard-backend .
 
-          # Stop and remove the existing container if it exists
-          docker ps -q --filter "name=dustmeasuringdashboard-backend" | grep -q . && docker stop dustmeasuringdashboard-backend && docker rm dustmeasuringdashboard-backend || true
+          # Stop and remove the existing backend container if it exists
+          docker ps -q --filter "name=dustmeasuringdashboard-backend" | grep -q . && \
+          docker stop dustmeasuringdashboard-backend && docker rm dustmeasuringdashboard-backend || true
 
-          # Run the new container
+          # Run the backend container
           docker run -d -p 5000:5000 \
-              -e DB_HOST=database-dustmeasuringdashboard.cheosu8kisha.ap-southeast-2.rds.amazonaws.com \
-              -e DB_PORT=1433 \
-              -e DB_USER=admin \
-              -e DB_PASSWORD=Strongpass1234 \
-              -e DB_NAME=dashboardDB \
-              -e DB_DIALECT=mssql \
-              -e PORT=5000 \
-              --name dustmeasuringdashboard-backend \
-              dustmeasuringdashboard-backend
+            --name dustmeasuringdashboard-backend \
+            -e DB_HOST=database-dustmeasuringdashboard.cheosu8kisha.ap-southeast-2.rds.amazonaws.com \
+            -e DB_PORT=1433 \
+            -e DB_USER=admin \
+            -e DB_PASSWORD=Strongpass1234 \
+            -e DB_NAME=dashboardDB \
+            -e DB_DIALECT=mssql \
+            -e PORT=5000 \
+            dustmeasuringdashboard-backend
+
+          # Frontend Deployment
+          cd ../client
+          docker build -t dustmeasuringdashboard-frontend .
+
+          # Stop and remove the existing frontend container if it exists
+          docker ps -q --filter "name=dustmeasuringdashboard-frontend" | grep -q . && \
+          docker stop dustmeasuringdashboard-frontend && docker rm dustmeasuringdashboard-frontend || true
+
+          # Run the frontend container
+          docker run -d -p 80:80 \
+            --name dustmeasuringdashboard-frontend \
+            dustmeasuringdashboard-frontend
