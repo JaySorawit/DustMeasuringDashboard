@@ -135,8 +135,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
     fetchFilteredData();
   };
 
-  console.log("API_BASE_URL", API_BASE_URL);
-
   return (
     <div
       style={{
@@ -146,6 +144,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         justifyContent: "center",
       }}
     >
+      <p>{API_BASE_URL}</p>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div
           style={{
