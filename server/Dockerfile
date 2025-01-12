@@ -1,18 +1,22 @@
-# Use official Node.js image
+# Step 1: Use Node image to build the project
+FROM node:18 AS build
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+
+RUN npm install
+COPY . ./
+
+RUN npm run build
+
+# Step 2: Run the server
 FROM node:18
 
-# Set working directory
 WORKDIR /app
+COPY --from=build /app/dist /app/dist
 
-# Install dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --production
 
-# Copy the backend code
-COPY . .
-
-# Expose backend port
 EXPOSE 5000
-
-# Start the backend server with the appropriate environment
-CMD ["npm", "start"]
+CMD ["node", "dist/server.js"]

@@ -144,7 +144,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
         justifyContent: "center",
       }}
     >
-      <p>{API_BASE_URL}</p>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div
           style={{
