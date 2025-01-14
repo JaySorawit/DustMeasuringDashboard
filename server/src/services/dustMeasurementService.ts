@@ -16,9 +16,8 @@ interface DustMeasurementInput {
 // Fetch all dust measurements
 export const getDustMeasurementData = async () => {
     try {
-        // Use the DustMeasurement model's `findAll()` to fetch all records
         const measurements = await DustMeasurement.findAll();
-        return measurements; // Return the measurements as an array of model instances
+        return measurements;
     } catch (error) {
         throw new Error(`Error fetching dust measurements: ${(error as Error).message}`);
     }
@@ -29,6 +28,7 @@ export const getDustMeasurementDataByDateRange = async (
     startDate: Date,
     endDate: Date,
     rooms: string[],
+    locations: string[],
     dustTypes: number[]
 ) => {
     try {
@@ -38,45 +38,68 @@ export const getDustMeasurementDataByDateRange = async (
             },
         };
 
-        if (rooms.length > 0) {
+        if (rooms && rooms.length > 0) {
             whereClause.room = {
                 [Op.in]: rooms,
             };
         }
 
-        if (dustTypes.length > 0) {
-            whereClause.running_state = {
-                [Op.in]: dustTypes,
+        if (locations && locations.length > 0) {
+            whereClause.location_name = {
+                [Op.in]: locations,
             };
+        }
+
+        const attributes = [
+            'measurement_datetime',
+            'room',
+            'location_name',
+            'count',
+            'running_state',
+            'alarm_high',
+        ];
+
+        if (dustTypes && dustTypes.length > 0) {
+            if (dustTypes.includes(0.1)) attributes.push('um01');
+            if (dustTypes.includes(0.3)) attributes.push('um03');
+            if (dustTypes.includes(0.5)) attributes.push('um05');
+        } else {
+            attributes.push('um01', 'um03', 'um05');
         }
 
         const measurements = await DustMeasurement.findAll({
             where: whereClause,
-            attributes: [
-                [fn('DISTINCT', col('location_name')), 'location_name']
-            ],
-            order: [['location_name', 'ASC']],
+            attributes,
+            order: [['measurement_datetime', 'ASC'], ['room', 'ASC']],
             raw: true,
         });
 
         return measurements;
     } catch (error) {
+        console.error("Error fetching dust measurements:", error);
         throw new Error(`Error fetching dust measurements: ${(error as Error).message}`);
     }
 };
 
 // Fetch dust measurement locations
-export const getDustMeasurementLocation = async () => {
+export const getDustMeasurementLocation = async (rooms: string) => {
+    const whereClause: { room?: { [Op.in]: string[] } } = {};
+    if (rooms) {
+        whereClause.room = { [Op.in]: JSON.parse(rooms) };
+    }
+
     try {
         const locations = await DustMeasurement.findAll({
-            attributes: [
-                [fn('DISTINCT', col('location_name')), 'location_name'],
-            ],
-            order: [['location_name', 'ASC']],
+            attributes: ['room', 'location_name'],
+            where: whereClause,
+            group: ['room', 'location_name'],
+            order: [['room', 'ASC'], ['location_name', 'ASC']],
             raw: true,
         });
-        return locations.map(location => location.location_name);
+
+        return locations;
     } catch (error) {
+        console.error("Error fetching dust measurements:", error);
         throw new Error(`Error fetching dust measurement locations: ${(error as Error).message}`);
     }
 };
