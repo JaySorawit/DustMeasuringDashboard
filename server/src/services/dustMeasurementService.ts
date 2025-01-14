@@ -51,6 +51,7 @@ export const getDustMeasurementDataByDateRange = async (
         }
 
         const attributes = [
+            'measurement_id',
             'measurement_datetime',
             'room',
             'location_name',

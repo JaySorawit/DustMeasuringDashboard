@@ -19,15 +19,8 @@ import axios from "axios";
 
 import isBetween from "dayjs/plugin/isBetween";
 import API_BASE_URL from "../configs/apiConfig";
+import { DustMeasurement } from "../types/types";
 dayjs.extend(isBetween);
-
-interface DustMeasurement {
-  id: number;
-  measurement_datetime: string;
-  location_id: string;
-  dust_value: number;
-  dust_type: number;
-}
 
 interface FilterBarProps {
   dustTypes: number[];
@@ -55,23 +48,32 @@ const FilterBar: React.FC<FilterBarProps> = ({
 }) => {
   const [startDate, setStartDate] = useState<Dayjs | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
-  const [locations, setLocations] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<string[]>([]);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const [_, setLocations] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
+  const [data, setData] = useState<{ location_name: string; room: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Inside useEffect for fetching locations, sort the locations alphabetically
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/dust-measurements/locations`
-        );
-        const sortedLocations = response.data.sort((a: string, b: string) =>
-          a.localeCompare(b, undefined, { numeric: true })
-        );
+        const response = await axios.get(`${API_BASE_URL}/api/dust-measurements/locations`);
+        const data: { location_name: string; room: string }[] = response.data;
+
+        // Sort and extract unique rooms and locations
+        const sortedLocations = data.map((item) => item.location_name)
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
         setLocations(sortedLocations);
-        setSelectedLocations(sortedLocations);
+
+        const sortedRooms = [...new Set(data.map((item) => item.room))]
+          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        setRooms(sortedRooms);
+
+        setSelectedRooms(sortedRooms);
+        setData(data);
       } catch (error) {
         console.error("Error fetching locations:", error);
       }
@@ -79,6 +81,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
     fetchLocations();
   }, []);
+
+  useEffect(() => {
+    // Filter locations based on selected rooms
+    const uniqueFilteredLocations = Array.from(
+      new Set(
+        data
+          .filter((item) => selectedRooms.includes(item.room))
+          .map((item) => item.location_name)
+      )
+    );
+    setFilteredLocations(uniqueFilteredLocations);
+  }, [selectedRooms, data]);
 
   useEffect(() => {
     const sortedDustTypes = [...dustTypes].sort((a, b) => a - b);
@@ -89,16 +103,17 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const payload = {
+        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        rooms: selectedRooms,
+        locations: selectedLocations,
+        dustTypes: selectedDustTypes,
+      };
+
+      const response = await axios.post(
         `${API_BASE_URL}/api/dust-measurements/date-range`,
-        {
-          params: {
-            startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-            endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
-            locations: JSON.stringify(selectedLocations),
-            dustTypes: JSON.stringify(selectedDustTypes),
-          },
-        }
+        payload
       );
 
       onFilter(response.data);
@@ -113,7 +128,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const value = event.target.value as string[];
     if (value.includes("all")) {
       setSelectedLocations(
-        selectedLocations.length === locations.length ? [] : [...locations]
+        selectedLocations.length === filteredLocations.length ? [] : [...filteredLocations]
       );
     } else {
       setSelectedLocations(value);
@@ -167,7 +182,52 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </div>
       </LocalizationProvider>
 
-      <FormControl sx={{ m: 1, width: 150 }}>
+      <FormControl sx={{ m: 1, width: 180 }}>
+        <InputLabel id="room-filter-label">Rooms</InputLabel>
+        <Select
+          labelId="room-filter-label"
+          id="room-filter"
+          multiple
+          value={selectedRooms}
+          onChange={(event) => {
+            const value = event.target.value as string[];
+            if (value.includes("all")) {
+              setSelectedRooms(
+                selectedRooms.length === rooms.length ? [] : [...rooms]
+              );
+            } else {
+              setSelectedRooms(value);
+            }
+          }}
+          input={<OutlinedInput label="Rooms" />}
+          renderValue={(selected) =>
+            selected.length === rooms.length
+              ? "All Rooms"
+              : selected.join(", ")
+          }
+          MenuProps={MenuProps}
+        >
+          <MenuItem value="all">
+            <Checkbox
+              checked={selectedRooms.length === rooms.length}
+              indeterminate={
+                selectedRooms.length > 0 &&
+                selectedRooms.length < rooms.length
+              }
+            />
+            <ListItemText primary="Select All" />
+          </MenuItem>
+          {rooms.map((room) => (
+            <MenuItem key={room} value={room}>
+              <Checkbox checked={selectedRooms.includes(room)} />
+              <ListItemText primary={room} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+
+      <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="location-filter-label">Locations</InputLabel>
         <Select
           labelId="location-filter-label"
@@ -177,7 +237,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onChange={handleLocationChange}
           input={<OutlinedInput label="Locations" />}
           renderValue={(selected) =>
-            selected.length === locations.length
+            selected.length === filteredLocations.length
               ? "All Locations"
               : selected.join(", ")
           }
@@ -185,15 +245,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
         >
           <MenuItem value="all">
             <Checkbox
-              checked={selectedLocations.length === locations.length}
+              checked={selectedLocations.length === filteredLocations.length}
               indeterminate={
                 selectedLocations.length > 0 &&
-                selectedLocations.length < locations.length
+                selectedLocations.length < filteredLocations.length
               }
             />
             <ListItemText primary="Select All" />
           </MenuItem>
-          {locations.map((location) => (
+          {filteredLocations.map((location) => (
             <MenuItem key={location} value={location}>
               <Checkbox checked={selectedLocations.includes(location)} />
               <ListItemText primary={location} />
@@ -202,7 +262,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ m: 1, width: 200 }}>
+      <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="dust-type-filter-label">Dust Types</InputLabel>
         <Select
           labelId="dust-type-filter-label"
