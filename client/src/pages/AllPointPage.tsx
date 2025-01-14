@@ -25,7 +25,7 @@ const AllPointPage: React.FC = () => {
   });
 
   // Get unique location IDs
-  const locationIds = Array.from(new Set(filteredData.map((data) => data.location_id)));
+  const locationIds = Array.from(new Set(filteredData.map((data) => data.location_name)));
 
   // Get the current set of locations for the page
   const paginatedLocationIds = locationIds.slice(currentPage * locationsPerPage, (currentPage + 1) * locationsPerPage);
