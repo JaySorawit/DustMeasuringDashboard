@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Checkbox,
@@ -50,12 +50,17 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
   const [rooms, setRooms] = useState<string[]>([]);
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
-  const [_, setLocations] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
   const [data, setData] = useState<{ location_name: string; room: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const filtersRef = useRef({
+    selectedRooms: [] as string[],
+    selectedLocations: [] as string[],
+    selectedDustTypes: [] as number[],
+  });
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -63,17 +68,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
         const response = await axios.get(`${API_BASE_URL}/api/dust-measurements/locations`);
         const data: { location_name: string; room: string }[] = response.data;
 
-        // Sort and extract unique rooms and locations
-        const sortedLocations = data.map((item) => item.location_name)
-          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-        setLocations(sortedLocations);
+        const sortedLocations = data.map((item) => item.location_name).sort();
+        const sortedRooms = [...new Set(data.map((item) => item.room))].sort();
 
-        const sortedRooms = [...new Set(data.map((item) => item.room))]
-          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
         setRooms(sortedRooms);
-
         setSelectedRooms(sortedRooms);
+        setSelectedLocations(sortedLocations);
         setData(data);
+
+        filtersRef.current.selectedRooms = sortedRooms;
+        filtersRef.current.selectedLocations = sortedLocations;
       } catch (error) {
         console.error("Error fetching locations:", error);
       }
@@ -83,23 +87,24 @@ const FilterBar: React.FC<FilterBarProps> = ({
   }, []);
 
   useEffect(() => {
-    // Filter locations based on selected rooms
-    const uniqueFilteredLocations = Array.from(
+    const updatedLocations = Array.from(
       new Set(
         data
           .filter((item) => selectedRooms.includes(item.room))
           .map((item) => item.location_name)
       )
-    );
-    setFilteredLocations(uniqueFilteredLocations);
-  }, [selectedRooms, data]);
+    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  
+    setSelectedLocations(updatedLocations);
+    setFilteredLocations(updatedLocations);
+  }, [selectedRooms, data]);  
 
   useEffect(() => {
     const sortedDustTypes = [...dustTypes].sort((a, b) => a - b);
     setSelectedDustTypes(sortedDustTypes);
+    filtersRef.current.selectedDustTypes = sortedDustTypes;
   }, [dustTypes]);
 
-  // Fetch data based on filters
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
@@ -117,6 +122,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
       );
 
       onFilter(response.data);
+
+      filtersRef.current.selectedRooms = selectedRooms;
+      filtersRef.current.selectedLocations = selectedLocations;
+      filtersRef.current.selectedDustTypes = selectedDustTypes;
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -135,50 +144,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
     }
   };
 
-  const handleDustTypeChange = (event: SelectChangeEvent<number[]>) => {
-    const value = event.target.value as number[];
-    if (value.includes(-1)) {
-      setSelectedDustTypes(
-        selectedDustTypes.length === dustTypes.length ? [] : [...dustTypes]
-      );
-    } else {
-      setSelectedDustTypes(value);
-    }
-  };
-
   const applyFilters = () => {
     fetchFilteredData();
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        marginBottom: "2rem",
-        flexWrap: "wrap",
-        justifyContent: "center",
-      }}
-    >
+    <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div
-          style={{
-            width: "320px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            marginRight: "0.5rem",
-          }}
-        >
-          <DatePicker
-            label="Start Date"
-            value={startDate}
-            onChange={(newValue) => setStartDate(newValue)}
-          />
-          <DatePicker
-            label="End Date"
-            value={endDate}
-            onChange={(newValue) => setEndDate(newValue)}
-          />
+        <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem" }}>
+          <DatePicker label="Start Date" value={startDate} onChange={(newValue) => setStartDate(newValue)} />
+          <DatePicker label="End Date" value={endDate} onChange={(newValue) => setEndDate(newValue)} />
         </div>
       </LocalizationProvider>
 
@@ -192,29 +167,17 @@ const FilterBar: React.FC<FilterBarProps> = ({
           onChange={(event) => {
             const value = event.target.value as string[];
             if (value.includes("all")) {
-              setSelectedRooms(
-                selectedRooms.length === rooms.length ? [] : [...rooms]
-              );
+              setSelectedRooms(selectedRooms.length === rooms.length ? [] : [...rooms]);
             } else {
               setSelectedRooms(value);
             }
           }}
           input={<OutlinedInput label="Rooms" />}
-          renderValue={(selected) =>
-            selected.length === rooms.length
-              ? "All Rooms"
-              : selected.join(", ")
-          }
+          renderValue={(selected) => (selected.length === rooms.length ? "All Rooms" : selected.join(", "))}
           MenuProps={MenuProps}
         >
           <MenuItem value="all">
-            <Checkbox
-              checked={selectedRooms.length === rooms.length}
-              indeterminate={
-                selectedRooms.length > 0 &&
-                selectedRooms.length < rooms.length
-              }
-            />
+            <Checkbox checked={selectedRooms.length === rooms.length} indeterminate={selectedRooms.length > 0 && selectedRooms.length < rooms.length} />
             <ListItemText primary="Select All" />
           </MenuItem>
           {rooms.map((room) => (
@@ -226,7 +189,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-
       <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="location-filter-label">Locations</InputLabel>
         <Select
@@ -236,23 +198,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
           value={selectedLocations}
           onChange={handleLocationChange}
           input={<OutlinedInput label="Locations" />}
-          renderValue={(selected) =>
-            selected.length === filteredLocations.length
+          renderValue={(selected) => {
+            const uniqueSelected = Array.from(new Set(selected));
+            return uniqueSelected.length === filteredLocations.length
               ? "All Locations"
-              : selected.join(", ")
-          }
+              : uniqueSelected.join(", ");
+          }}
           MenuProps={MenuProps}
         >
-          <MenuItem value="all">
-            <Checkbox
-              checked={selectedLocations.length === filteredLocations.length}
-              indeterminate={
-                selectedLocations.length > 0 &&
-                selectedLocations.length < filteredLocations.length
-              }
-            />
-            <ListItemText primary="Select All" />
-          </MenuItem>
           {filteredLocations.map((location) => (
             <MenuItem key={location} value={location}>
               <Checkbox checked={selectedLocations.includes(location)} />
@@ -269,25 +222,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
           id="dust-type-filter"
           multiple
           value={selectedDustTypes}
-          onChange={handleDustTypeChange}
+          onChange={(event) => setSelectedDustTypes(event.target.value as number[])}
           input={<OutlinedInput label="Dust Types" />}
-          renderValue={(selected) =>
-            selected.length === dustTypes.length
-              ? "All Dust Types"
-              : selected.map((type) => `Type ${type}`).join(", ")
-          }
+          renderValue={(selected) => (selected.length === dustTypes.length ? "All Dust Types" : selected.map((type) => `Type ${type}`).join(", "))}
           MenuProps={MenuProps}
         >
-          <MenuItem value={-1}>
-            <Checkbox
-              checked={selectedDustTypes.length === dustTypes.length}
-              indeterminate={
-                selectedDustTypes.length > 0 &&
-                selectedDustTypes.length < dustTypes.length
-              }
-            />
-            <ListItemText primary="Select All" />
-          </MenuItem>
           {dustTypes.map((dustType) => (
             <MenuItem key={dustType} value={dustType}>
               <Checkbox checked={selectedDustTypes.includes(dustType)} />
