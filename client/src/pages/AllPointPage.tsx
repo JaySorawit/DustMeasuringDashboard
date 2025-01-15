@@ -10,7 +10,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const AllPointPage: React.FC = () => {
-  const dustTypes = [0.3, 0.5]; // Only 0.3 and 0.5
+  const dustTypes = [0.1, 0.3, 0.5];
   const [filteredData, setFilteredData] = useState<DustMeasurement[]>([]);
   const startDate = dayjs().subtract(1, "day").startOf("day"); // 1 day ago
   const endDate = dayjs().endOf("day"); // End of the current day  

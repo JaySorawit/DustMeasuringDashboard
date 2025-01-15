@@ -94,10 +94,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
           .map((item) => item.location_name)
       )
     ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  
+
     setSelectedLocations(updatedLocations);
     setFilteredLocations(updatedLocations);
-  }, [selectedRooms, data]);  
+  }, [selectedRooms, data]);
 
   useEffect(() => {
     const sortedDustTypes = [...dustTypes].sort((a, b) => a - b);
@@ -137,7 +137,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const value = event.target.value as string[];
     if (value.includes("all")) {
       setSelectedLocations(
-        selectedLocations.length === filteredLocations.length ? [] : [...filteredLocations]
+        selectedLocations.length === filteredLocations.length
+          ? []
+          : [...filteredLocations]
       );
     } else {
       setSelectedLocations(value);
@@ -206,6 +208,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
           }}
           MenuProps={MenuProps}
         >
+          <MenuItem value="all">
+            <Checkbox
+              checked={selectedLocations.length === filteredLocations.length}
+              indeterminate={selectedLocations.length > 0 && selectedLocations.length < filteredLocations.length}
+            />
+            <ListItemText primary="Select All" />
+          </MenuItem>
           {filteredLocations.map((location) => (
             <MenuItem key={location} value={location}>
               <Checkbox checked={selectedLocations.includes(location)} />
