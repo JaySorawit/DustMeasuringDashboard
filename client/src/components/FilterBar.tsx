@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Checkbox,
@@ -19,15 +19,8 @@ import axios from "axios";
 
 import isBetween from "dayjs/plugin/isBetween";
 import API_BASE_URL from "../configs/apiConfig";
+import { DustMeasurement } from "../types/types";
 dayjs.extend(isBetween);
-
-interface DustMeasurement {
-  id: number;
-  measurement_datetime: string;
-  location_id: string;
-  dust_value: number;
-  dust_type: number;
-}
 
 interface FilterBarProps {
   dustTypes: number[];
@@ -55,23 +48,36 @@ const FilterBar: React.FC<FilterBarProps> = ({
 }) => {
   const [startDate, setStartDate] = useState<Dayjs | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
-  const [locations, setLocations] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<string[]>([]);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
+  const [data, setData] = useState<{ location_name: string; room: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Inside useEffect for fetching locations, sort the locations alphabetically
+  const filtersRef = useRef({
+    selectedRooms: [] as string[],
+    selectedLocations: [] as string[],
+    selectedDustTypes: [] as number[],
+  });
+
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/dust-measurements/locations`
-        );
-        const sortedLocations = response.data.sort((a: string, b: string) =>
-          a.localeCompare(b, undefined, { numeric: true })
-        );
-        setLocations(sortedLocations);
+        const response = await axios.get(`${API_BASE_URL}/api/dust-measurements/locations`);
+        const data: { location_name: string; room: string }[] = response.data;
+
+        const sortedLocations = data.map((item) => item.location_name).sort();
+        const sortedRooms = [...new Set(data.map((item) => item.room))].sort();
+
+        setRooms(sortedRooms);
+        setSelectedRooms(sortedRooms);
         setSelectedLocations(sortedLocations);
+        setData(data);
+
+        filtersRef.current.selectedRooms = sortedRooms;
+        filtersRef.current.selectedLocations = sortedLocations;
       } catch (error) {
         console.error("Error fetching locations:", error);
       }
@@ -81,27 +87,45 @@ const FilterBar: React.FC<FilterBarProps> = ({
   }, []);
 
   useEffect(() => {
+    const updatedLocations = Array.from(
+      new Set(
+        data
+          .filter((item) => selectedRooms.includes(item.room))
+          .map((item) => item.location_name)
+      )
+    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  
+    setSelectedLocations(updatedLocations);
+    setFilteredLocations(updatedLocations);
+  }, [selectedRooms, data]);  
+
+  useEffect(() => {
     const sortedDustTypes = [...dustTypes].sort((a, b) => a - b);
     setSelectedDustTypes(sortedDustTypes);
+    filtersRef.current.selectedDustTypes = sortedDustTypes;
   }, [dustTypes]);
 
-  // Fetch data based on filters
   const fetchFilteredData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const payload = {
+        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        rooms: selectedRooms,
+        locations: selectedLocations,
+        dustTypes: selectedDustTypes,
+      };
+
+      const response = await axios.post(
         `${API_BASE_URL}/api/dust-measurements/date-range`,
-        {
-          params: {
-            startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-            endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
-            locations: JSON.stringify(selectedLocations),
-            dustTypes: JSON.stringify(selectedDustTypes),
-          },
-        }
+        payload
       );
 
       onFilter(response.data);
+
+      filtersRef.current.selectedRooms = selectedRooms;
+      filtersRef.current.selectedLocations = selectedLocations;
+      filtersRef.current.selectedDustTypes = selectedDustTypes;
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -113,21 +137,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const value = event.target.value as string[];
     if (value.includes("all")) {
       setSelectedLocations(
-        selectedLocations.length === locations.length ? [] : [...locations]
+        selectedLocations.length === filteredLocations.length ? [] : [...filteredLocations]
       );
     } else {
       setSelectedLocations(value);
-    }
-  };
-
-  const handleDustTypeChange = (event: SelectChangeEvent<number[]>) => {
-    const value = event.target.value as number[];
-    if (value.includes(-1)) {
-      setSelectedDustTypes(
-        selectedDustTypes.length === dustTypes.length ? [] : [...dustTypes]
-      );
-    } else {
-      setSelectedDustTypes(value);
     }
   };
 
@@ -136,38 +149,47 @@ const FilterBar: React.FC<FilterBarProps> = ({
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        marginBottom: "2rem",
-        flexWrap: "wrap",
-        justifyContent: "center",
-      }}
-    >
+    <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div
-          style={{
-            width: "320px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            marginRight: "0.5rem",
-          }}
-        >
-          <DatePicker
-            label="Start Date"
-            value={startDate}
-            onChange={(newValue) => setStartDate(newValue)}
-          />
-          <DatePicker
-            label="End Date"
-            value={endDate}
-            onChange={(newValue) => setEndDate(newValue)}
-          />
+        <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem" }}>
+          <DatePicker label="Start Date" value={startDate} onChange={(newValue) => setStartDate(newValue)} />
+          <DatePicker label="End Date" value={endDate} onChange={(newValue) => setEndDate(newValue)} />
         </div>
       </LocalizationProvider>
 
-      <FormControl sx={{ m: 1, width: 150 }}>
+      <FormControl sx={{ m: 1, width: 180 }}>
+        <InputLabel id="room-filter-label">Rooms</InputLabel>
+        <Select
+          labelId="room-filter-label"
+          id="room-filter"
+          multiple
+          value={selectedRooms}
+          onChange={(event) => {
+            const value = event.target.value as string[];
+            if (value.includes("all")) {
+              setSelectedRooms(selectedRooms.length === rooms.length ? [] : [...rooms]);
+            } else {
+              setSelectedRooms(value);
+            }
+          }}
+          input={<OutlinedInput label="Rooms" />}
+          renderValue={(selected) => (selected.length === rooms.length ? "All Rooms" : selected.join(", "))}
+          MenuProps={MenuProps}
+        >
+          <MenuItem value="all">
+            <Checkbox checked={selectedRooms.length === rooms.length} indeterminate={selectedRooms.length > 0 && selectedRooms.length < rooms.length} />
+            <ListItemText primary="Select All" />
+          </MenuItem>
+          {rooms.map((room) => (
+            <MenuItem key={room} value={room}>
+              <Checkbox checked={selectedRooms.includes(room)} />
+              <ListItemText primary={room} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="location-filter-label">Locations</InputLabel>
         <Select
           labelId="location-filter-label"
@@ -176,24 +198,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
           value={selectedLocations}
           onChange={handleLocationChange}
           input={<OutlinedInput label="Locations" />}
-          renderValue={(selected) =>
-            selected.length === locations.length
+          renderValue={(selected) => {
+            const uniqueSelected = Array.from(new Set(selected));
+            return uniqueSelected.length === filteredLocations.length
               ? "All Locations"
-              : selected.join(", ")
-          }
+              : uniqueSelected.join(", ");
+          }}
           MenuProps={MenuProps}
         >
-          <MenuItem value="all">
-            <Checkbox
-              checked={selectedLocations.length === locations.length}
-              indeterminate={
-                selectedLocations.length > 0 &&
-                selectedLocations.length < locations.length
-              }
-            />
-            <ListItemText primary="Select All" />
-          </MenuItem>
-          {locations.map((location) => (
+          {filteredLocations.map((location) => (
             <MenuItem key={location} value={location}>
               <Checkbox checked={selectedLocations.includes(location)} />
               <ListItemText primary={location} />
@@ -202,32 +215,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ m: 1, width: 200 }}>
+      <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="dust-type-filter-label">Dust Types</InputLabel>
         <Select
           labelId="dust-type-filter-label"
           id="dust-type-filter"
           multiple
           value={selectedDustTypes}
-          onChange={handleDustTypeChange}
+          onChange={(event) => setSelectedDustTypes(event.target.value as number[])}
           input={<OutlinedInput label="Dust Types" />}
-          renderValue={(selected) =>
-            selected.length === dustTypes.length
-              ? "All Dust Types"
-              : selected.map((type) => `Type ${type}`).join(", ")
-          }
+          renderValue={(selected) => (selected.length === dustTypes.length ? "All Dust Types" : selected.map((type) => `Type ${type}`).join(", "))}
           MenuProps={MenuProps}
         >
-          <MenuItem value={-1}>
-            <Checkbox
-              checked={selectedDustTypes.length === dustTypes.length}
-              indeterminate={
-                selectedDustTypes.length > 0 &&
-                selectedDustTypes.length < dustTypes.length
-              }
-            />
-            <ListItemText primary="Select All" />
-          </MenuItem>
           {dustTypes.map((dustType) => (
             <MenuItem key={dustType} value={dustType}>
               <Checkbox checked={selectedDustTypes.includes(dustType)} />

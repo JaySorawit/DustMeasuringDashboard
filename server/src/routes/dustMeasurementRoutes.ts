@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Define API routes for Dust Measurements
 router.get('/', getDustMeasurementsHandler);  // For all measurements
-router.get('/date-range', getDustMeasurementDataByDateRangeHandler); // For measurements by date range
+router.post('/date-range', getDustMeasurementDataByDateRangeHandler); // For measurements by date range
 router.get('/locations', getDustMeasurementLocationHandler); // For search location
 router.post('/', createDustMeasurementHandler); // To create new measurement
 
