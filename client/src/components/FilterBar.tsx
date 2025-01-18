@@ -93,7 +93,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
           .filter((item) => selectedRooms.includes(item.room))
           .map((item) => item.location_name)
       )
-    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    ).sort((a, b) => {
+      return String(a).localeCompare(String(b), undefined, { numeric: true });
+    });    
 
     setSelectedLocations(updatedLocations);
     setFilteredLocations(updatedLocations);
