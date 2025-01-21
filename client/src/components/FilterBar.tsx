@@ -166,6 +166,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <Select
           labelId="room-filter-label"
           id="room-filter"
+          name="room-filter" 
           multiple
           value={selectedRooms}
           onChange={(event) => {
@@ -198,6 +199,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <Select
           labelId="location-filter-label"
           id="location-filter"
+          name="location-filter"
           multiple
           value={selectedLocations}
           onChange={handleLocationChange}
@@ -231,6 +233,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <Select
           labelId="dust-type-filter-label"
           id="dust-type-filter"
+          name="dust-type-filter"
           multiple
           value={selectedDustTypes}
           onChange={(event) => setSelectedDustTypes(event.target.value as number[])}

@@ -25,7 +25,7 @@ interface BoxPlotProps {
 
 const ITEMS_PER_PAGE = 20;
 
-const BoxPlot: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits }) => {
+const BoxPlotByLocation: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits }) => {
     const [showUSL, setShowUSL] = useState(false);
     const [showUCL, setShowUCL] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
@@ -51,14 +51,10 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits
         return acc;
     }, {});
 
-    console.log(filteredData); // Check the actual location name data
-
-    // Pagination logic to slice data
-    const locations = Object.keys(groupedData);
+    const locations = Object.keys(groupedData).sort((a, b) => a.padStart(3, '0').localeCompare(b.padStart(3, '0')));
     const paginatedLocations = locations.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
     const paginatedValues = paginatedLocations.map((location) => groupedData[location]);
 
-    // Chart data configuration
     const chartData: ChartConfiguration<"boxplot">["data"] = {
         labels: paginatedLocations,
         datasets: [
@@ -152,7 +148,7 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits
                             legend: { position: "top" },
                             title: { display: true, text: `Box Plot for Dust Type ${dustType} in ${room.join(", ")}` },
                             annotation: {
-                                annotations, // Ensure it's an array
+                                annotations,
                             },
                         },
                         scales: {
@@ -168,7 +164,7 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits
                     variant="contained"
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
                     disabled={currentPage === 0}
-                    style={{ marginRight: "10px" }}
+                    style={{ marginRight: "10px", width: "100px" }}
                 >
                     Previous
                 </Button>
@@ -181,7 +177,7 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits
                     variant="contained"
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
                     disabled={currentPage === totalPages - 1}
-                    style={{ marginLeft: "10px" }}
+                    style={{ marginLeft: "10px", width: "100px" }}
                 >
                     Next
                 </Button>
@@ -190,4 +186,4 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits
     );
 };
 
-export default BoxPlot;
+export default BoxPlotByLocation;
