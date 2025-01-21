@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import FilterBar from "../components/FilterBar";
-import BoxPlot from "../components/BoxPlot";
+import BoxPlot from "../components/BoxPlotByLocation";
 import dayjs from "dayjs";
 import { FetchedData } from "../types/types";
 import API_BASE_URL from "../configs/apiConfig";
