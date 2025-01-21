@@ -70,7 +70,7 @@ const MonthlyViewPage: React.FC = () => {
         </Box>
       ) : (
         <Box>
-          <h2>All Point Page</h2>
+          <h2>Monthly View Page</h2>
           <FilterBar
             dustTypes={dustTypes}
             onFilter={(filteredData) => setFilteredData(filteredData)}
