@@ -43,22 +43,45 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
             return;
         }
 
-        // Adjust dates to handle full day ranges
+        // Adjust end date to handle full day range
         parsedEndDate.setHours(23, 59, 59, 999);
 
         const roomsArray = Array.isArray(rooms) ? rooms : [];
         const locationArray = Array.isArray(locations) ? locations : [];
         const dustTypeArray = Array.isArray(dustTypes) ? dustTypes : [];
 
-        // Fetch data with filters
-        const measurements = await getDustMeasurementDataByDateRange(
-            parsedStartDate,
-            parsedEndDate,
-            roomsArray,
-            locationArray,
-            dustTypeArray
-        );
+        // Function to get data for each 7-day period
+        const fetchDataForWeek = async (start: Date, end: Date) => {
+            return await getDustMeasurementDataByDateRange(start, end, roomsArray, locationArray, dustTypeArray);
+        };
 
+        // Function to break the range into chunks of 7 days
+        const fetchDataByChunks = async () => {
+            const result: any[] = [];
+            let currentStartDate = parsedStartDate;
+            let currentEndDate = new Date(parsedStartDate);
+            currentEndDate.setDate(currentEndDate.getDate() + 6);
+        
+            while (currentEndDate <= parsedEndDate) {
+                const data = await fetchDataForWeek(currentStartDate, currentEndDate);
+                result.push(...data);
+        
+                currentStartDate = new Date(currentEndDate);
+                currentStartDate.setDate(currentStartDate.getDate() + 1);
+                currentEndDate = new Date(currentStartDate);
+                currentEndDate.setDate(currentEndDate.getDate() + 6);
+            }
+        
+            if (currentStartDate <= parsedEndDate) {
+                const data = await fetchDataForWeek(currentStartDate, parsedEndDate);
+                result.push(...data);
+            }
+        
+            return result;
+        };        
+
+        // Fetch and send data in chunks
+        const measurements = await fetchDataByChunks();
         res.json(measurements);
     } catch (error) {
         res.status(500).json({ message: `Error fetching measurements: ${(error as Error).message}` });

@@ -93,11 +93,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
           .filter((item) => selectedRooms.includes(item.room))
           .map((item) => item.location_name)
       )
-    ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-  
+    ).sort((a, b) => {
+      return String(a).localeCompare(String(b), undefined, { numeric: true });
+    });    
+
     setSelectedLocations(updatedLocations);
     setFilteredLocations(updatedLocations);
-  }, [selectedRooms, data]);  
+  }, [selectedRooms, data]);
 
   useEffect(() => {
     const sortedDustTypes = [...dustTypes].sort((a, b) => a - b);
@@ -137,7 +139,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const value = event.target.value as string[];
     if (value.includes("all")) {
       setSelectedLocations(
-        selectedLocations.length === filteredLocations.length ? [] : [...filteredLocations]
+        selectedLocations.length === filteredLocations.length
+          ? []
+          : [...filteredLocations]
       );
     } else {
       setSelectedLocations(value);
@@ -162,6 +166,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <Select
           labelId="room-filter-label"
           id="room-filter"
+          name="room-filter" 
           multiple
           value={selectedRooms}
           onChange={(event) => {
@@ -194,6 +199,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <Select
           labelId="location-filter-label"
           id="location-filter"
+          name="location-filter"
           multiple
           value={selectedLocations}
           onChange={handleLocationChange}
@@ -206,6 +212,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
           }}
           MenuProps={MenuProps}
         >
+          <MenuItem value="all">
+            <Checkbox
+              checked={selectedLocations.length === filteredLocations.length}
+              indeterminate={selectedLocations.length > 0 && selectedLocations.length < filteredLocations.length}
+            />
+            <ListItemText primary="Select All" />
+          </MenuItem>
           {filteredLocations.map((location) => (
             <MenuItem key={location} value={location}>
               <Checkbox checked={selectedLocations.includes(location)} />
@@ -220,6 +233,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <Select
           labelId="dust-type-filter-label"
           id="dust-type-filter"
+          name="dust-type-filter"
           multiple
           value={selectedDustTypes}
           onChange={(event) => setSelectedDustTypes(event.target.value as number[])}
