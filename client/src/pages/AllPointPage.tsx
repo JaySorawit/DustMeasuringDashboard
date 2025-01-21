@@ -10,6 +10,7 @@ import axios from "axios";
 const AllPointPage: React.FC = () => {
   const dustTypes = [0.1, 0.3, 0.5];
   const [rooms, setRooms] = useState<string[]>([]);
+  const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);
   const startDate = dayjs().subtract(1, "day").startOf("day");
   const endDate = dayjs().endOf("day");
@@ -36,6 +37,26 @@ const AllPointPage: React.FC = () => {
       setInitialLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchRoomLimits = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/room-management/`);
+        const result = await response.json();
+        if (result.success) {
+          const formattedLimits = result.data.reduce((acc: any, curr: any) => {
+            acc[curr.room] = curr;
+            return acc;
+          }, {});
+          setRoomLimits(formattedLimits);
+        }
+      } catch (error) {
+        console.error("Error fetching room limits:", error);
+      }
+    };
+
+    fetchRoomLimits();
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -66,11 +87,11 @@ const AllPointPage: React.FC = () => {
               );
               return (
                 hasData && (
-                  <Box key={`${room}-${dustType}`} sx={{ my: 4 }}>
+                  <Box key={`${room}-${dustType}`} sx={{ my: 4, mx: 8 }}>
                     <Typography variant="h6" gutterBottom>
                       {`${room} - Dust Type: ${dustType}`}
                     </Typography>
-                    <BoxPlot fetchData={filteredData} room={[room]} dustType={dustType} />
+                    <BoxPlot fetchData={filteredData} room={[room]} dustType={dustType} roomLimits={roomLimits} />
                   </Box>
                 )
               );
