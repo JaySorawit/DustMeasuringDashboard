@@ -12,7 +12,7 @@ const AllPointPage: React.FC = () => {
   const [rooms, setRooms] = useState<string[]>([]);
   const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);
-  const startDate = dayjs().subtract(1, "day").startOf("day");
+  const startDate = dayjs().startOf("day");
   const endDate = dayjs().endOf("day");
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
