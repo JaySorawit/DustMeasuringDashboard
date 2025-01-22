@@ -21,15 +21,12 @@ interface BarChartProps {
 
 const ITEMS_PER_PAGE = 20;
 
-// Define color scheme for values within the same location
-const colorScheme = ["rgb(164, 224, 222)", "rgb(255, 229, 172)" ,"rgb(255, 177, 192)"];
-
-const BarChart: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
+const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
     const [currentPage, setCurrentPage] = useState(0);
 
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
 
-    // Filter and process data based on rooms and dust type
+    // Filter and group data based on rooms and dust type
     const filteredData = fetchData
         .filter(
             (data) =>
@@ -41,30 +38,23 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
             value: data[dustTypeKey],
         }));
 
-    // Group values by location
-    const groupedData = filteredData.reduce((acc: { [key: string]: number[] }, curr) => {
-        if (!acc[curr.location]) acc[curr.location] = [];
-        acc[curr.location].push(curr.value);
+    const locationCounts = filteredData.reduce((acc: { [key: string]: number }, curr) => {
+        acc[curr.location] = (acc[curr.location] || 0) + 1;
         return acc;
     }, {});
 
-    const locations = Object.keys(groupedData).sort((a, b) => a.localeCompare(b));
+    const locations = Object.keys(locationCounts).sort((a, b) => a.localeCompare(b));
     const paginatedLocations = locations.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
-
-    const paginatedValues = paginatedLocations.flatMap((location) => groupedData[location]);
-    const paginatedLabels = paginatedLocations.flatMap((location) => groupedData[location].map(() => location));
+    const paginatedCounts = paginatedLocations.map((location) => locationCounts[location]);
 
     const chartData = {
-        labels: paginatedLabels,
+        labels: paginatedLocations,
         datasets: [
             {
-                label: `First time dust value`,
-                data: paginatedValues,
-                backgroundColor: paginatedLabels.map((label, index) => {
-                    const position = groupedData[label].indexOf(paginatedValues[index]);
-                    return colorScheme[position % colorScheme.length];
-                }),
-                borderColor: "rgba(0, 0, 0, 1)",
+                label: `Dust Measurement Count` ,
+                data: paginatedCounts,
+                backgroundColor: "rgba(75, 192, 192, 0.5)",
+                borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 1,
             },
         ],
@@ -74,7 +64,7 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "center", height: "400px" }}>
+            <div style={{display:"flex",justifyContent:"center", height: "400px" }}>
                 <Chart
                     type="bar"
                     data={chartData}
@@ -82,11 +72,11 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
                         responsive: true,
                         plugins: {
                             legend: { position: "top" },
-                            title: { display: true, text: `Dust Value by Location` },
+                            title: { display: true, text: `Dust Value Measurement Count by Location` },
                         },
                         scales: {
                             x: { title: { display: true, text: "Locations" } },
-                            y: { title: { display: true, text: "Dust Value" }, beginAtZero: true },
+                            y: { title: { display: true, text: "Measurement Count" }, beginAtZero: true },
                         },
                     }}
                 />
@@ -119,4 +109,4 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
     );
 };
 
-export default BarChart;
+export default BarChartByLocation;

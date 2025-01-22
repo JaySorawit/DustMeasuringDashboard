@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import FilterBar from "../components/FilterBar";
-import BoxPlot from "../components/BoxPlotByLocation";
+import BoxPlotByLocation from "../components/BoxPlotByLocation";
 import dayjs from "dayjs";
 import { FetchedData } from "../types/types";
 import API_BASE_URL from "../configs/apiConfig";
@@ -92,7 +92,7 @@ const AllPointPage: React.FC = () => {
                     <Typography variant="h6" gutterBottom>
                       {`${room} - Dust Type: ${dustType}`}
                     </Typography>
-                    <BoxPlot fetchData={filteredData} room={[room]} dustType={dustType} roomLimits={roomLimits} />
+                    <BoxPlotByLocation fetchData={filteredData} room={[room]} dustType={dustType} roomLimits={roomLimits} />
                   </Box>
                 )
               );

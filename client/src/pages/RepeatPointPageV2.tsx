@@ -5,10 +5,10 @@ import dayjs from "dayjs";
 import { FetchedData } from "../types/types";
 import API_BASE_URL from "../configs/apiConfig";
 import axios from "axios";
-import BarChart from "../components/BarChart";
+import BarChartByLocation from "../components/BarChartV2";
 
 
-const RepeatPointPage: React.FC = () => {
+const RepeatPointPageV2: React.FC = () => {
   const dustTypes = [0.1, 0.3, 0.5];
   const [rooms, setRooms] = useState<string[]>([]);
   const [_, setRoomLimits] = useState<any>({});
@@ -94,7 +94,7 @@ const RepeatPointPage: React.FC = () => {
                     <Typography variant="h6" gutterBottom>
                       {`${room} - Dust Type: ${dustType}`}
                     </Typography>
-                    <BarChart fetchData={filteredData} room={[room]} dustType={dustType} />
+                    <BarChartByLocation fetchData={filteredData} room={[room]} dustType={dustType} />
                   </Box>
                 )
               );
@@ -106,4 +106,4 @@ const RepeatPointPage: React.FC = () => {
   );
 };
 
-export default RepeatPointPage;
+export default RepeatPointPageV2;
