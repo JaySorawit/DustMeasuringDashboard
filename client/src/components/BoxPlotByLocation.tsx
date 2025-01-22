@@ -30,8 +30,6 @@ const BoxPlotByLocation: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, 
     const [showUCL, setShowUCL] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
 
-    console.log(fetchData);
-
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
     const dustTypeLabel = `${(dustType * 10).toFixed(0).padStart(2, "0")}`;
 
