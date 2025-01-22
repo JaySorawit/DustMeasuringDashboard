@@ -87,15 +87,16 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
     const paginatedValues = paginatedMonths.map((month) => groupedByMonth[month]);
 
     // Prepare the box plot data in the format expected by Chart.js BoxPlot
-    const prepareBoxPlotData = (data: number[]): { min: number; q1: number; median: number; q3: number; max: number } => {
+    const prepareBoxPlotData = (data: number[]): { min: number; q1: number; median: number; mean : number, q3: number; max: number } => {
         data.sort((a, b) => a - b);
         const min = data[0];
         const max = data[data.length - 1];
         const median = data[Math.floor(data.length / 2)];
+        const mean = data.reduce((acc, curr) => acc + curr, 0) / data.length;
         const q1 = data[Math.floor(data.length / 4)];
         const q3 = data[Math.floor((3 * data.length) / 4)];
 
-        return { min, q1, median, q3, max };
+        return { min, q1, median, mean, q3, max };
     };
 
     const chartData: ChartConfiguration<"boxplot">["data"] = {
