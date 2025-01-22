@@ -6,8 +6,6 @@ interface RoomDustSafetyLimitInput extends Omit<RoomDustSafetyLimitAttributes, '
 
 export const createRoomDustSafetyLimit = async (data: RoomDustSafetyLimitInput) => {
     try {
-        console.log('Creating room dust safety limit');
-        console.log(data);
         const newRoomLimit = await RoomDustSafetyLimits.create(data);
         return newRoomLimit;
     } catch (error) {
