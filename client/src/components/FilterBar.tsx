@@ -27,6 +27,7 @@ interface FilterBarProps {
   onFilter: (filteredData: DustMeasurement[]) => void;
   initialStartDate?: Dayjs | null;
   initialEndDate?: Dayjs | null;
+  isSingleDate?: boolean;
 }
 
 const ITEM_HEIGHT = 48;
@@ -45,6 +46,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   onFilter,
   initialStartDate = null,
   initialEndDate = null,
+  isSingleDate = false,
 }) => {
   const [startDate, setStartDate] = useState<Dayjs | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
@@ -95,7 +97,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
       )
     ).sort((a, b) => {
       return String(a).localeCompare(String(b), undefined, { numeric: true });
-    });    
+    });
 
     setSelectedLocations(updatedLocations);
     setFilteredLocations(updatedLocations);
@@ -154,19 +156,31 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
   return (
     <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem" }}>
-          <DatePicker label="Start Date" value={startDate} onChange={(newValue) => setStartDate(newValue)} />
-          <DatePicker label="End Date" value={endDate} onChange={(newValue) => setEndDate(newValue)} />
-        </div>
-      </LocalizationProvider>
+      {isSingleDate ? (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <div style={{ width: "180px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }} >
+            <DatePicker label="Selected Date" value={startDate}
+              onChange={(newValue) => {
+                setStartDate(newValue);
+                setEndDate(newValue);
+              }} />
+          </div>
+        </LocalizationProvider>
+      ) : (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }}>
+            <DatePicker label="Start Date" value={startDate} onChange={(newValue) => setStartDate(newValue)} />
+            <DatePicker label="End Date" value={endDate} onChange={(newValue) => setEndDate(newValue)} />
+          </div>
+        </LocalizationProvider>
+      )}
 
       <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="room-filter-label">Rooms</InputLabel>
         <Select
           labelId="room-filter-label"
           id="room-filter"
-          name="room-filter" 
+          name="room-filter"
           multiple
           value={selectedRooms}
           onChange={(event) => {
