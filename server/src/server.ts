@@ -2,7 +2,7 @@ import app from './app'; // Import the Express app
 import sequelize from './database'; // Import Sequelize instance
 
 // Define server port
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // Start the server after ensuring database connection
 (async () => {

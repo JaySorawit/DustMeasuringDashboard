@@ -35,11 +35,11 @@ export const getDustMeasurementDataByDateRange = async (
         const whereClause: any = {
             measurement_datetime: {
                 [Op.between]: [
-                    new Date(startDate.setHours(0, 0, 0, 0)),
-                    new Date(endDate.setHours(23, 59, 59, 999))
+                    new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), 0, 0, 0, 0)),
+                    new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate(), 23, 59, 59, 999))
                 ],
             },
-        };        
+        };
 
         if (rooms && rooms.length > 0) {
             whereClause.room = {

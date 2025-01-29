@@ -62,6 +62,10 @@ const RepeatPointPage: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, []);
+  
+  useEffect(() => {
+    setRooms(Array.from(new Set(filteredData.map((d) => d.room))));
+  }, [filteredData]);
 
   return (
     <>

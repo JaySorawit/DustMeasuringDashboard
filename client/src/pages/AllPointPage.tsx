@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import FilterBar from "../components/FilterBar";
 import BoxPlotByLocation from "../components/BoxPlotByLocation";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { FetchedData } from "../types/types";
 import API_BASE_URL from "../configs/apiConfig";
 import axios from "axios";
@@ -12,8 +12,8 @@ const AllPointPage: React.FC = () => {
   const [rooms, setRooms] = useState<string[]>([]);
   const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);
-  const startDate = dayjs().startOf("day");
-  const endDate = dayjs().endOf("day");
+  const [startDate] = useState<Dayjs>(dayjs().startOf("month"));
+  const [endDate] = useState<Dayjs>(dayjs().endOf("month"));
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
   const fetchData = async () => {
