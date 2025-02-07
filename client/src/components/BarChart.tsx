@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import { Chart } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -9,112 +9,65 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
-import { Button } from "@mui/material";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface BarChartProps {
     fetchData: any[];
-    room: string[];
     dustType: number;
 }
 
-const ITEMS_PER_PAGE = 20;
-
-// Define color scheme for values within the same location
-const colorScheme = ["rgb(164, 224, 222)", "rgb(255, 229, 172)" ,"rgb(255, 177, 192)"];
-
-const BarChart: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
-    const [currentPage, setCurrentPage] = useState(0);
-
+const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType }) => {
+    const chartRef = useRef<any>(null);
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
 
-    // Filter and process data based on rooms and dust type
     const filteredData = fetchData
-        .filter(
-            (data) =>
-                room.map((r) => r.toLowerCase().trim()).includes(data.room.toLowerCase().trim()) &&
-                data[dustTypeKey] !== undefined
-        )
-        .map((data) => ({
-            location: data.location_name,
-            value: data[dustTypeKey],
-        }));
+    .map((data) => ({
+        count: data.count,
+        value: data[dustTypeKey] ?? 0,
+    }));
 
-    // Group values by location
-    const groupedData = filteredData.reduce((acc: { [key: string]: number[] }, curr) => {
-        if (!acc[curr.location]) acc[curr.location] = [];
-        acc[curr.location].push(curr.value);
-        return acc;
-    }, {});
-
-    const locations = Object.keys(groupedData).sort((a, b) => a.localeCompare(b));
-    const paginatedLocations = locations.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
-
-    const paginatedValues = paginatedLocations.flatMap((location) => groupedData[location]);
-    const paginatedLabels = paginatedLocations.flatMap((location) => groupedData[location].map(() => location));
+    filteredData.sort((a, b) => a.count - b.count);
 
     const chartData = {
-        labels: paginatedLabels,
+        labels: filteredData.map((d) => d.count),
         datasets: [
             {
-                label: `First time dust value`,
-                data: paginatedValues,
-                backgroundColor: paginatedLabels.map((label, index) => {
-                    const position = groupedData[label].indexOf(paginatedValues[index]);
-                    return colorScheme[position % colorScheme.length];
-                }),
-                borderColor: "rgba(0, 0, 0, 1)",
+                label: `Dust Value (${dustTypeKey})`,
+                data: filteredData.map((d) => d.value),
+                backgroundColor: "rgba(75, 192, 192, 0.5)",
+                borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 1,
             },
         ],
     };
 
-    const totalPages = Math.ceil(locations.length / ITEMS_PER_PAGE);
+ 
 
     return (
-        <div>
-            <div style={{ display: "flex", justifyContent: "center", height: "400px" }}>
-                <Chart
-                    type="bar"
-                    data={chartData}
-                    options={{
-                        responsive: true,
-                        plugins: {
-                            legend: { position: "top" },
-                            title: { display: true, text: `Dust Value by Location` },
+        <div style={{ display: "flex", justifyContent: "center", height: "400px" }}>
+            <Chart
+                ref={chartRef}
+                type="bar"
+                data={chartData}
+                options={{
+                    responsive: true,
+                    plugins: {
+                        legend: { position: "top" },
+                        title: { display: true, text: "Dust value for each count" },
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: "Count" },
+                            ticks: { stepSize: 1 },
                         },
-                        scales: {
-                            x: { title: { display: true, text: "Locations" } },
-                            y: { title: { display: true, text: "Dust Value" }, beginAtZero: true },
+                        y: {
+                            title: { display: true, text: "Dust Value" },
+                            beginAtZero: true,
                         },
-                    }}
-                />
-            </div>
-
-            <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <Button
-                    variant="contained"
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-                    disabled={currentPage === 0}
-                    style={{ marginRight: "10px", width: "100px" }}
-                >
-                    Previous
-                </Button>
-
-                <span>
-                    Page {currentPage + 1} of {totalPages}
-                </span>
-
-                <Button
-                    variant="contained"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
-                    disabled={currentPage === totalPages - 1}
-                    style={{ marginLeft: "10px", width: "100px" }}
-                >
-                    Next
-                </Button>
-            </div>
+                    },
+                }}
+            />
         </div>
     );
 };
