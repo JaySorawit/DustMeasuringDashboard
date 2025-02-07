@@ -50,7 +50,7 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
     const paginatedCounts = paginatedLocations.map((location) => locationCounts[location]);
 
 
-    const handleClick = (event: any, elements: any[]) => {
+    const handleClick = (_: any, elements: any[]) => {
         if (elements.length > 0 && onBarClick) {
             const index = elements[0].index;
             const selectedLocation = paginatedLocations[index];
