@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { FetchedData } from "../types/types";
 
 const RepeatPointPageV2: React.FC = () => {
-  const dustTypes = [0.1, 0.3, 0.5];
+  const dustTypes = [0.5, 0.3, 0.1];
   const [rooms, setRooms] = useState<string[]>([]);
   const [_, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);
@@ -109,7 +109,11 @@ const RepeatPointPageV2: React.FC = () => {
             initialEndDate={endDate}
             isSingleDate={true}
           />
-          {rooms.map((room) =>
+          {rooms.length === 0 ? (
+            <Typography variant="body1" align="center" sx={{ my: 4 }}>
+              No data available
+            </Typography>
+          ) : (rooms.map((room) =>
             dustTypes.map((dustType) => {
               const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
 
@@ -134,7 +138,7 @@ const RepeatPointPageV2: React.FC = () => {
                 )
               );
             })
-          )}
+          ))}
         </Box>
       )}
 
