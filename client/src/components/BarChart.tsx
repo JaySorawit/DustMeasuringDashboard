@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Chart } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -9,23 +9,35 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
+import annotationPlugin from "chartjs-plugin-annotation";
+import { Button } from "@mui/material";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, annotationPlugin);
 
 interface BarChartProps {
     fetchData: any[];
     dustType: number;
+    room: string;
+    roomLimits: { [key: string]: { [key: string]: number } };
 }
 
-const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType }) => {
+const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimits }) => {
     const chartRef = useRef<any>(null);
+    const [showUSL, setShowUSL] = useState(false);
+    const [showUCL, setShowUCL] = useState(false);
+
+    console.log("fetchData", fetchData);
+    console.log("dustType", dustType);
+    console.log("roomLimits", roomLimits);
+    
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
+    const dustTypeLabel = (dustType * 10).toFixed(0).padStart(2, "0");
 
     const filteredData = fetchData
-    .map((data) => ({
-        count: data.count,
-        value: data[dustTypeKey] ?? 0,
-    }));
+        .map((data) => ({
+            count: data.count,
+            value: data[dustTypeKey] ?? 0,
+        }));
 
     filteredData.sort((a, b) => a.count - b.count);
 
@@ -42,33 +54,99 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType }) => {
         ],
     };
 
- 
+    const annotations: any = [];
+
+    if (showUSL && roomLimits[room]) {
+        const uslKey = `usl${dustTypeLabel}`;
+        if (roomLimits[room][uslKey] !== undefined) {
+            annotations.push({
+                type: "line",
+                mode: "horizontal",
+                scaleID: "y",
+                value: roomLimits[room][uslKey],
+                borderColor: "red",
+                borderWidth: 2,
+                label: {
+                    content: `USL (${room})`,
+                    enabled: true,
+                    position: "end",
+                    backgroundColor: "red",
+                    font: { size: 12 },
+                },
+            });
+        }
+    }
+
+    if (showUCL && roomLimits[room]) {
+        const uclKey = `ucl${dustTypeLabel}`;
+        if (roomLimits[room][uclKey] !== undefined) {
+            annotations.push({
+                type: "line",
+                mode: "horizontal",
+                scaleID: "y",
+                value: roomLimits[room][uclKey],
+                borderColor: "blue",
+                borderWidth: 2,
+                label: {
+                    content: `UCL (${room})`,
+                    enabled: true,
+                    position: "end",
+                    backgroundColor: "blue",
+                    font: { size: 12 },
+                },
+            });
+        }
+    }
 
     return (
-        <div style={{ display: "flex", justifyContent: "center", height: "400px" }}>
-            <Chart
-                ref={chartRef}
-                type="bar"
-                data={chartData}
-                options={{
-                    responsive: true,
-                    plugins: {
-                        legend: { position: "top" },
-                        title: { display: true, text: "Dust value for each count" },
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: "Count" },
-                            ticks: { stepSize: 1 },
+        <>
+            <div style={{ display: "flex", justifyContent: "center", height: "250px" }}>
+                <Chart
+                    ref={chartRef}
+                    type="bar"
+                    data={chartData}
+                    options={{
+                        responsive: true,
+                        plugins: {
+                            legend: { position: "top" },
+                            title: { display: true, text: "Dust Value for each count" },
+                            annotation: {
+                                annotations,
+                            },
                         },
-                        y: {
-                            title: { display: true, text: "Dust Value" },
-                            beginAtZero: true,
+                        scales: {
+                            x: {
+                                title: { display: true, text: "Count" },
+                                ticks: { stepSize: 1 },
+                                
+                            },
+                            y: {
+                                title: { display: true, text: "Dust Value" },
+                                beginAtZero: true,
+                            },
                         },
-                    },
-                }}
-            />
-        </div>
+                    }}
+                />
+            </div>
+            <div style={{ justifyContent: "center", display: "flex" }}>
+                <Button
+                    variant="contained"
+                    color={showUSL ? "secondary" : "primary"}
+                    onClick={() => setShowUSL(!showUSL)}
+                    style={{ marginRight: "10px" }}
+                >
+                    {showUSL ? "Hide USL" : "Show USL"}
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color={showUCL ? "secondary" : "primary"}
+                    onClick={() => setShowUCL(!showUCL)}
+                >
+                    {showUCL ? "Hide UCL" : "Show UCL"}
+                </Button>
+            </div>
+        </>
     );
 };
 

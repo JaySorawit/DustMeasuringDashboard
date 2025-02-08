@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, CircularProgress, Typography, Modal } from "@mui/material";
+import { Box, CircularProgress, Typography, Modal, IconButton } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 import BarChartV2 from "../components/BarChartV2";
 import BarChart from "../components/BarChart";
 import axios from "axios";
@@ -11,7 +12,7 @@ import { FetchedData } from "../types/types";
 const RepeatPointPageV2: React.FC = () => {
   const dustTypes = [0.5, 0.3, 0.1];
   const [rooms, setRooms] = useState<string[]>([]);
-  const [_, setRoomLimits] = useState<any>({});
+  const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);
   const startDate = dayjs().startOf("day");
   const endDate = dayjs().endOf("day");
@@ -144,16 +145,31 @@ const RepeatPointPageV2: React.FC = () => {
 
       {/* Modal */}
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <Box sx={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 500, bgcolor: "background.paper",
-          boxShadow: 24, p: 4, borderRadius: 2
-        }}>
-          <Typography variant="h6">Details for {selectedRoom} {selectedLocation} on {selectedDate}</Typography>
-          <BarChart fetchData={modalData} dustType={selectedDustType!} />
-        </Box>
-      </Modal>
+            <Box sx={{
+                position: "absolute", top: "50%", left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 700, bgcolor: "background.paper",
+                boxShadow: 24, p: 4, borderRadius: 2
+            }}>
+                <IconButton
+                    onClick={() => setIsModalOpen(false)} 
+                    sx={{
+                        position: "absolute", top: 8, right: 8, 
+                        color: 'text.primary', 
+                        zIndex: 1
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+                
+                <Typography variant="h6">
+                    Details for {selectedRoom} {selectedLocation} on {selectedDate}
+                </Typography>
+                {selectedRoom && (
+                    <BarChart fetchData={modalData} dustType={selectedDustType!} room={selectedRoom} roomLimits={roomLimits} />
+                )}
+            </Box>
+        </Modal>
     </>
   );
 };
