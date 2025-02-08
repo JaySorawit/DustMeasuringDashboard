@@ -8,7 +8,7 @@ import axios from "axios";
 import BoxPlotByDate from "../components/BoxPlotByDate";
 
 const MonthlyViewPage: React.FC = () => {
-  const dustTypes = [0.1, 0.3, 0.5];
+  const dustTypes = [0.5, 0.3, 0.1];
   const [rooms, setRooms] = useState<string[]>([]);
   const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);
@@ -59,6 +59,10 @@ const MonthlyViewPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    setRooms(Array.from(new Set(filteredData.map((d) => d.room))));
+  }, [filteredData]);
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -77,7 +81,11 @@ const MonthlyViewPage: React.FC = () => {
             initialStartDate={startDate}
             initialEndDate={endDate}
           />
-          {rooms.map((room) =>
+          {rooms.length === 0 ? (
+            <Typography variant="body1" align="center" sx={{ my: 4 }}>
+              No data available
+            </Typography>
+          ) : (rooms.map((room) =>
             dustTypes.map((dustType) => {
               const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
               const hasData = filteredData.some(
@@ -101,7 +109,7 @@ const MonthlyViewPage: React.FC = () => {
                 )
               );
             })
-          )}
+          ))}
         </Box>
       )}
     </>

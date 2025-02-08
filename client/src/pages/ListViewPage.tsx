@@ -19,7 +19,7 @@ import API_BASE_URL from "../configs/apiConfig";
 
 function ListViewPage() {
   const [filteredData, setFilteredData] = useState<DustMeasurement[]>([]);
-  const dustTypes = [0.1, 0.3, 0.5];
+  const dustTypes = [0.5, 0.3, 0.1];
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [order, setOrder] = useState<"asc" | "desc">("asc");

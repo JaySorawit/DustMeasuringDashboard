@@ -8,7 +8,6 @@ import ListViewPage from './pages/ListViewPage';
 import MonthlyViewPage from './pages/MonthlyViewPage';
 import RepeatPointPage from './pages/RepeatPointPage';
 import NotFoundPage from './pages/NotFoundPage';
-import RepeatPointPageV2 from './pages/RepeatPointPageV2';
 
 const router = createBrowserRouter([
   {
@@ -30,10 +29,6 @@ const router = createBrowserRouter([
           {
             path: 'RepeatPointPage',
             element: <RepeatPointPage />,
-          },
-          {
-            path: 'RepeatPointPageV2',
-            element: <RepeatPointPageV2 />,
           },
           {
             path: 'ListViewPage',

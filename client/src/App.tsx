@@ -30,11 +30,6 @@ export default function App() {
           icon: <BarChartIcon />,
         },
         {
-          segment: 'RepeatPointPageV2',
-          title: 'Repeat Point Page V2',
-          icon: <BarChartIcon />,
-        },
-        {
           segment: 'ListViewPage',
           title: 'List view',
           icon: <TableViewIcon />,

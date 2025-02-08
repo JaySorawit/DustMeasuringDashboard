@@ -17,11 +17,12 @@ interface BarChartProps {
     fetchData: any[];
     room: string[];
     dustType: number;
+    onBarClick?: (room: string, location: string, dustType: number) => void;
 }
 
 const ITEMS_PER_PAGE = 20;
 
-const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType }) => {
+const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarClick }) => {
     const [currentPage, setCurrentPage] = useState(0);
 
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
@@ -35,6 +36,7 @@ const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType
         )
         .map((data) => ({
             location: data.location_name,
+            room: data.room,
             value: data[dustTypeKey],
         }));
 
@@ -47,11 +49,29 @@ const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType
     const paginatedLocations = locations.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
     const paginatedCounts = paginatedLocations.map((location) => locationCounts[location]);
 
+
+    const handleClick = (_: any, elements: any[]) => {
+        if (elements.length > 0 && onBarClick) {
+            const index = elements[0].index;
+            const selectedLocation = paginatedLocations[index];
+
+            if (selectedLocation) {
+                const relatedRoom = filteredData.find(
+                    (data) => data.location === selectedLocation
+                )?.room;
+
+                if (relatedRoom) {
+                    onBarClick(relatedRoom, selectedLocation, dustType);
+                }
+            }
+        }
+    };
+
     const chartData = {
         labels: paginatedLocations,
         datasets: [
             {
-                label: `Dust Measurement Count` ,
+                label: `Dust Measurement Count`,
                 data: paginatedCounts,
                 backgroundColor: "rgba(75, 192, 192, 0.5)",
                 borderColor: "rgba(75, 192, 192, 1)",
@@ -64,7 +84,7 @@ const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType
 
     return (
         <div>
-            <div style={{display:"flex",justifyContent:"center", height: "400px" }}>
+            <div style={{ display: "flex", justifyContent: "center", height: "400px" }}>
                 <Chart
                     type="bar"
                     data={chartData}
@@ -72,12 +92,13 @@ const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType
                         responsive: true,
                         plugins: {
                             legend: { position: "top" },
-                            title: { display: true, text: `Dust Value Measurement Count by Location` },
+                            title: { display: true, text: `Dust measurement count by Location` },
                         },
                         scales: {
                             x: { title: { display: true, text: "Locations" } },
                             y: { title: { display: true, text: "Measurement Count" }, beginAtZero: true },
                         },
+                        onClick: handleClick,
                     }}
                 />
             </div>
@@ -109,4 +130,4 @@ const BarChartByLocation: React.FC<BarChartProps> = ({ fetchData, room, dustType
     );
 };
 
-export default BarChartByLocation;
+export default BarChartV2;
