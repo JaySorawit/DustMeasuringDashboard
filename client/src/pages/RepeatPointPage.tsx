@@ -102,7 +102,7 @@ const RepeatPointPageV2: React.FC = () => {
         </Box>
       ) : (
         <Box>
-          <h2>All Point Page</h2>
+          <h2>Repeat Point Page</h2>
           <FilterBar
             dustTypes={dustTypes}
             onFilter={(filteredData) => setFilteredData(filteredData)}
