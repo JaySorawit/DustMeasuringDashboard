@@ -11,6 +11,7 @@ import {
 } from "chart.js";
 import annotationPlugin from "chartjs-plugin-annotation";
 import { Button } from "@mui/material";
+import CircleIcon from '@mui/icons-material/Circle';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, annotationPlugin);
 
@@ -23,8 +24,8 @@ interface BarChartProps {
 
 const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimits }) => {
     const chartRef = useRef<any>(null);
-    const [showUSL, setShowUSL] = useState(false);
-    const [showUCL, setShowUCL] = useState(false);
+    const [showUSL, setShowUSL] = useState(true);
+    const [showUCL, setShowUCL] = useState(true);
 
     console.log("fetchData", fetchData);
     console.log("dustType", dustType);
@@ -130,8 +131,9 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
             </div>
             <div style={{ justifyContent: "center", display: "flex" }}>
                 <Button
-                    variant="contained"
-                    color={showUSL ? "secondary" : "primary"}
+                    variant="outlined"
+                    startIcon={<CircleIcon />}
+                    color={showUSL ? "error" : "error"}
                     onClick={() => setShowUSL(!showUSL)}
                     style={{ marginRight: "10px" }}
                 >
@@ -139,8 +141,9 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
                 </Button>
 
                 <Button
-                    variant="contained"
-                    color={showUCL ? "secondary" : "primary"}
+                    variant="outlined"
+                    startIcon={<CircleIcon />}
+                    color={showUSL ? "primary" : "primary"}
                     onClick={() => setShowUCL(!showUCL)}
                 >
                     {showUCL ? "Hide UCL" : "Show UCL"}

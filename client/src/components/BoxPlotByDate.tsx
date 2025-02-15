@@ -12,6 +12,7 @@ import {
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import annotationPlugin from "chartjs-plugin-annotation";
 import { Button } from "@mui/material";
+import CircleIcon from '@mui/icons-material/Circle';
 
 // Register necessary chart.js components
 ChartJS.register(CategoryScale, LinearScale, BoxPlotController, BoxAndWiskers, Title, Tooltip, Legend, annotationPlugin);
@@ -26,8 +27,8 @@ interface BoxPlotProps {
 const ITEMS_PER_PAGE = 1;
 
 const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits }) => {
-    const [showUSL, setShowUSL] = useState(false);
-    const [showUCL, setShowUCL] = useState(false);
+    const [showUSL, setShowUSL] = useState(true);
+    const [showUCL, setShowUCL] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
 
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
@@ -167,8 +168,9 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
         <div>
             <div style={{ margin: "10px" }}>
                 <Button
-                    variant="contained"
-                    color={showUSL ? "secondary" : "primary"}
+                    variant="outlined"
+                    startIcon={<CircleIcon />}
+                    color={showUSL ? "error" : "error"}
                     onClick={() => setShowUSL(!showUSL)}
                     style={{ marginRight: "10px" }}
                 >
@@ -176,8 +178,9 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
                 </Button>
 
                 <Button
-                    variant="contained"
-                    color={showUCL ? "secondary" : "primary"}
+                    variant="outlined"
+                    startIcon={<CircleIcon />}
+                    color={showUCL ? "primary" : "primary"}
                     onClick={() => setShowUCL(!showUCL)}
                 >
                     {showUCL ? "Hide UCL" : "Show UCL"}
