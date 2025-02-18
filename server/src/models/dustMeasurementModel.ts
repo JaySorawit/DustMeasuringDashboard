@@ -5,6 +5,7 @@ interface DustMeasurementAttributes {
     measurement_id: number;
     measurement_datetime: Date;
     room: string;
+    area: string;
     location_name: string;
     count: number;
     um01: number;
@@ -20,6 +21,7 @@ class DustMeasurement extends Model<DustMeasurementAttributes, DustMeasurementCr
     public measurement_id!: number;
     public measurement_datetime!: Date;
     public room!: string;
+    public area!: string;
     public location_name!: string;
     public count!: number;
     public um01!: number;
@@ -32,6 +34,13 @@ class DustMeasurement extends Model<DustMeasurementAttributes, DustMeasurementCr
         DustMeasurement.belongsTo(models.RoomDustSafetyLimits, {
             foreignKey: 'room',
             targetKey: 'room',
+            as: 'RoomData'
+        });
+
+        DustMeasurement.belongsTo(models.RoomDustSafetyLimits, {
+            foreignKey: 'area',
+            targetKey: 'area',
+            as: 'AreaData'
         });
     }
 }
@@ -49,10 +58,18 @@ DustMeasurement.init(
         },
         room: {
             type: DataTypes.STRING(255),
-            allowNull: true,
+            allowNull: false,
             references: {
                 model: 'RoomDustSafetyLimits',
                 key: 'room',
+            },
+        },
+        area: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            references: {
+                model: 'RoomDustSafetyLimits',
+                key: 'area',
             },
         },
         location_name: {
@@ -88,6 +105,7 @@ DustMeasurement.init(
         sequelize,
         modelName: 'DustMeasurement',
         tableName: 'DustMeasurements',
+        timestamps: false,
     }
 );
 

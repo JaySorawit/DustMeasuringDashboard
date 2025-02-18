@@ -23,7 +23,7 @@ export const getDustMeasurementsHandler = async (req: Request, res: Response): P
 // Get dust measurements by date range
 export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { startDate, endDate, rooms, locations, dustTypes } = req.body;
+        const { startDate, endDate, rooms, areas, locations, dustTypes } = req.body;
 
         if (!startDate || !endDate) {
             res.status(400).json({ message: 'Start date and end date are required.' });
@@ -47,12 +47,13 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
         parsedEndDate.setHours(23, 59, 59, 999);
 
         const roomsArray = Array.isArray(rooms) ? rooms : [];
+        const areaArray = Array.isArray(areas) ? areas : [];
         const locationArray = Array.isArray(locations) ? locations : [];
         const dustTypeArray = Array.isArray(dustTypes) ? dustTypes : [];
 
         // Function to get data for each 7-day period
         const fetchDataForWeek = async (start: Date, end: Date) => {
-            return await getDustMeasurementDataByDateRange(start, end, roomsArray, locationArray, dustTypeArray);
+            return await getDustMeasurementDataByDateRange(start, end, roomsArray, areaArray, locationArray, dustTypeArray);
         };
 
         // Function to break the range into chunks of 7 days
@@ -104,7 +105,7 @@ export const getDustMeasurementLocationHandler = async (req: Request, res: Respo
 // Create new dust measurement
 export const createDustMeasurementHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { measurement_datetime, room, location_name, count, um01, um03, um05, running_state, alarm_high } = req.body;
+        const { measurement_datetime, room, location_name, count, um01, um03, um05, running_state, alarm_high, area } = req.body;
 
         const requiredFields = [
             { field: measurement_datetime, name: 'measurement_datetime' },
@@ -127,6 +128,7 @@ export const createDustMeasurementHandler = async (req: Request, res: Response):
         const newMeasurement = await createDustMeasurementData({
             measurement_datetime,
             room,
+            area,
             location_name,
             count,
             um01,
