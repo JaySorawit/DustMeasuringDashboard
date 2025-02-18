@@ -4,6 +4,7 @@ import { Op, fn, col } from 'sequelize';
 interface DustMeasurementInput {
     measurement_datetime: Date;
     room: string;
+    area: string;
     location_name: string;
     count: number;
     um01: number;
@@ -28,22 +29,32 @@ export const getDustMeasurementDataByDateRange = async (
     startDate: Date,
     endDate: Date,
     rooms: string[],
+    areas: string[],
     locations: string[],
     dustTypes: number[]
 ) => {
     try {
+        const normalizedStartDate = new Date(startDate);
+        normalizedStartDate.setHours(0, 0, 0, 0);
+        
+        const normalizedEndDate = new Date(endDate);
+        normalizedEndDate.setHours(23, 59, 59, 999);        
+
         const whereClause: any = {
             measurement_datetime: {
-                [Op.between]: [
-                    new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), 0, 0, 0, 0)),
-                    new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate(), 23, 59, 59, 999))
-                ],
+                [Op.between]: [normalizedStartDate, normalizedEndDate],
             },
         };
 
         if (rooms && rooms.length > 0) {
             whereClause.room = {
                 [Op.in]: rooms,
+            };
+        }
+
+        if (areas && areas.length > 0) {
+            whereClause.area = {
+                [Op.in]: areas,
             };
         }
 
@@ -57,6 +68,7 @@ export const getDustMeasurementDataByDateRange = async (
             'measurement_id',
             'measurement_datetime',
             'room',
+            'area',
             'location_name',
             'count',
             'running_state',
@@ -111,6 +123,7 @@ export const getDustMeasurementLocation = async (rooms: string) => {
 // Create a new dust measurement data
 export const createDustMeasurementData = async (data: Omit<DustMeasurementInput, 'measurement_id'>) => {
     try {
+        console.log('Data to insert:', data);  // ตรวจสอบค่าที่ถูกส่ง
         const newMeasurement = await DustMeasurement.create(data);
         return newMeasurement;
     } catch (error) {

@@ -3,6 +3,7 @@ import sequelize from '../database';
 
 export interface RoomDustSafetyLimitAttributes {
     room: string;
+    area: string;
     usl01: number | null;
     usl03: number | null;
     usl05: number | null;
@@ -13,6 +14,7 @@ export interface RoomDustSafetyLimitAttributes {
 
 class RoomDustSafetyLimits extends Model<RoomDustSafetyLimitAttributes> implements RoomDustSafetyLimitAttributes {
     public room!: string;
+    public area!: string;
     public usl01!: number | null;
     public usl03!: number | null;
     public usl05!: number | null;
@@ -24,8 +26,12 @@ class RoomDustSafetyLimits extends Model<RoomDustSafetyLimitAttributes> implemen
 RoomDustSafetyLimits.init(
     {
         room: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(50),
             primaryKey: true,
+            allowNull: false,
+        },
+        area: {
+            type: DataTypes.STRING(50),
             allowNull: false,
         },
         usl01: {
@@ -51,7 +57,7 @@ RoomDustSafetyLimits.init(
         ucl05: {
             type: DataTypes.INTEGER,
             allowNull: true,
-        },        
+        },
     },
     {
         sequelize,

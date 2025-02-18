@@ -8,10 +8,10 @@ import {
 } from '../services/roomDustSafetyLimitService';
 
 export const createRoomDustSafetyLimitHandler = async (req: Request, res: Response) => {
-    const { room, usl01, usl03, usl05, ucl01, ucl03, ucl05 } = req.body;
+    const { room, area, usl01, usl03, usl05, ucl01, ucl03, ucl05 } = req.body;
     try {
         const roomLimit = await createRoomDustSafetyLimit({
-            room, usl01, usl03, usl05, ucl01, ucl03, ucl05
+            room, area, usl01, usl03, usl05, ucl01, ucl03, ucl05
         });
         res.status(201).json({
             success: true,
