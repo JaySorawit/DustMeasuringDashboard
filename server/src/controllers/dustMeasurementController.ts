@@ -35,21 +35,20 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
             return;
         }
 
-        const parsedStartDate = new Date(startDate as string);
-        const parsedEndDate = new Date(endDate as string);
+        // Parse dates directly
+        const parsedStartDate = new Date(`${startDate}Z`);
+        const parsedEndDate = new Date(`${endDate}Z`);   
 
         if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
             res.status(400).json({ message: 'Invalid date format.' });
             return;
         }
 
-        // Adjust end date to handle full day range
-        parsedEndDate.setHours(23, 59, 59, 999);
-
-        const roomsArray = Array.isArray(rooms) ? rooms : [];
-        const areaArray = Array.isArray(areas) ? areas : [];
-        const locationArray = Array.isArray(locations) ? locations : [];
-        const dustTypeArray = Array.isArray(dustTypes) ? dustTypes : [];
+        // Default to empty arrays if these parameters are missing
+        const roomsArray = Array.isArray(rooms) && rooms.length ? rooms : [];
+        const areaArray = Array.isArray(areas) && areas.length ? areas : [];
+        const locationArray = Array.isArray(locations) && locations.length ? locations : [];
+        const dustTypeArray = Array.isArray(dustTypes) && dustTypes.length ? dustTypes : [];
 
         // Function to get data for each 7-day period
         const fetchDataForWeek = async (start: Date, end: Date) => {
@@ -62,24 +61,24 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
             let currentStartDate = parsedStartDate;
             let currentEndDate = new Date(parsedStartDate);
             currentEndDate.setDate(currentEndDate.getDate() + 6);
-        
+            
             while (currentEndDate <= parsedEndDate) {
                 const data = await fetchDataForWeek(currentStartDate, currentEndDate);
                 result.push(...data);
-        
+
                 currentStartDate = new Date(currentEndDate);
                 currentStartDate.setDate(currentStartDate.getDate() + 1);
                 currentEndDate = new Date(currentStartDate);
                 currentEndDate.setDate(currentEndDate.getDate() + 6);
             }
-        
+
             if (currentStartDate <= parsedEndDate) {
                 const data = await fetchDataForWeek(currentStartDate, parsedEndDate);
                 result.push(...data);
             }
         
             return result;
-        };        
+        };
 
         // Fetch and send data in chunks
         const measurements = await fetchDataByChunks();

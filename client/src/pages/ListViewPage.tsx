@@ -99,8 +99,8 @@ function ListViewPage() {
     setInitialLoading(true);
     try {
       const payload = {
-        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        startDate: startDate ? startDate.format("YYYY-MM-DD HH:mm:ss") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD HH:mm:ss") : null,
       };
 
       const response = await axios.post(

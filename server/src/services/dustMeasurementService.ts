@@ -34,15 +34,9 @@ export const getDustMeasurementDataByDateRange = async (
     dustTypes: number[]
 ) => {
     try {
-        const normalizedStartDate = new Date(startDate);
-        normalizedStartDate.setHours(0, 0, 0, 0);
-        
-        const normalizedEndDate = new Date(endDate);
-        normalizedEndDate.setHours(23, 59, 59, 999);        
-
         const whereClause: any = {
             measurement_datetime: {
-                [Op.between]: [normalizedStartDate, normalizedEndDate],
+                [Op.between]: [startDate, endDate],
             },
         };
 
@@ -99,8 +93,8 @@ export const getDustMeasurementDataByDateRange = async (
 
 // Fetch dust measurement locations
 export const getDustMeasurementLocation = async (rooms?: string, areas?: string) => {
-    const whereClause: { 
-        room?: { [Op.in]: string[] }; 
+    const whereClause: {
+        room?: { [Op.in]: string[] };
         area?: { [Op.in]: string[] };
     } = {};
 

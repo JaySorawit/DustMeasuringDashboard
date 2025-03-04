@@ -12,7 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
@@ -113,8 +113,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setLoading(true);
     try {
       const payload = {
-        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        startDate: startDate ? startDate.format("YYYY-MM-DD HH:mm:ss") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD HH:mm:ss") : null,
         rooms: selectedRooms,
         locations: selectedLocations,
         dustTypes: selectedDustTypes,
@@ -158,19 +158,22 @@ const FilterBar: React.FC<FilterBarProps> = ({
     <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
       {isSingleDate ? (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <div style={{ width: "180px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }} >
-            <DatePicker label="Selected Date" value={startDate}
+          <div style={{ width: "200px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }} >
+            <DateTimePicker 
+              label="Selected Date"
+              value={startDate}
+              ampm={false}
               onChange={(newValue) => {
                 setStartDate(newValue);
-                setEndDate(newValue);
+                setEndDate(dayjs(newValue).add(1, "day"));
               }} />
           </div>
         </LocalizationProvider>
       ) : (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }}>
-            <DatePicker label="Start Date" value={startDate} onChange={(newValue) => setStartDate(newValue)} />
-            <DatePicker label="End Date" value={endDate} onChange={(newValue) => setEndDate(newValue)} />
+          <div style={{ width: "400px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }}>
+            <DateTimePicker label="Start Date" ampm={false} value={startDate} onChange={(newValue) => setStartDate(newValue)} />
+            <DateTimePicker label="End Date" ampm={false} value={endDate} onChange={(newValue) => setEndDate(newValue)} />
           </div>
         </LocalizationProvider>
       )}
