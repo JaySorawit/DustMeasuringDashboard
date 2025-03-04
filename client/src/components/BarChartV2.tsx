@@ -96,7 +96,7 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
                         },
                         scales: {
                             x: { title: { display: true, text: "Locations" } },
-                            y: { title: { display: true, text: "Measurement Count" }, beginAtZero: true },
+                            y: { title: { display: true, text: "Measurement Count" }, beginAtZero: true, ticks: { stepSize: 1 } },
                         },
                         onClick: handleClick,
                     }}
