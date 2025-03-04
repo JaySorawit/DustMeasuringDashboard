@@ -92,9 +92,10 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
 // Get dust measurement locations
 export const getDustMeasurementLocationHandler = async (req: Request, res: Response): Promise<void> => {
     const rooms = req.query.rooms ? JSON.parse(req.query.rooms as string) : null;
+    const areas = req.query.areas ? JSON.parse(req.query.areas as string) : null;
     
     try {
-        const measurements = await getDustMeasurementLocation(rooms as string);
+        const measurements = await getDustMeasurementLocation(rooms as string, areas as string);
         res.json(measurements);
     } catch (error) {
         console.error("Error in getDustMeasurementDataByDateRangeHandler:", error);
