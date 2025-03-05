@@ -110,66 +110,71 @@ const RepeatPointPageV2: React.FC = () => {
             initialEndDate={endDate}
             isSingleDate={true}
           />
-          {rooms.length === 0 ? (
-            <Typography variant="body1" align="center" sx={{ my: 4 }}>
-              No data available
-            </Typography>
-          ) : (rooms.map((room) =>
-            dustTypes.map((dustType) => {
-              const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
+          {rooms.map((room) => {
+            const areas = Array.from(new Set(filteredData.filter(d => d.room === room).map(d => d.area)));
 
-              const hasData = filteredData.some(
-                (data) =>
-                  data.room === room &&
-                  data[dustKey as keyof FetchedData] !== undefined
-              );
-              return (
-                hasData && (
-                  <Box key={`${room}-${dustType}`} sx={{ my: 4, mx: 8 }}>
+            return areas.map((area) =>
+              dustTypes.map((dustType) => {
+                const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
+
+                // Filter data specifically for this room, area, and dust type
+                const areaData = filteredData.filter(
+                  (data) =>
+                    data.room === room &&
+                    data.area === area &&
+                    data[dustKey as keyof FetchedData] !== undefined
+                );
+
+                if (areaData.length === 0) {
+                  return null;  // Skip this chart if no data for the combination
+                }
+
+                return (
+                  <Box key={`${room}-${area}-${dustType}`} sx={{ my: 4, mx: 8 }}>
                     <Typography variant="h6" gutterBottom>
-                      {`${room} - Dust Type: ${dustType}`}
+                      {`${room} (${area}) - Dust Type: ${dustType} µm`}
                     </Typography>
                     <BarChartV2
-                      fetchData={filteredData}
-                      room={[room]}
+                      fetchData={areaData}     // Pass only relevant data
+                      room={[room]}             // Pass room as array
                       dustType={dustType}
                       onBarClick={handleBarClick}
                     />
                   </Box>
-                )
-              );
-            })
-          ))}
+                );
+              })
+            );
+          })}
         </Box>
       )}
 
       {/* Modal */}
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <Box sx={{
-                position: "absolute", top: "50%", left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 700, bgcolor: "background.paper",
-                boxShadow: 24, p: 4, borderRadius: 2
-            }}>
-                <IconButton
-                    onClick={() => setIsModalOpen(false)} 
-                    sx={{
-                        position: "absolute", top: 8, right: 8, 
-                        color: 'text.primary', 
-                        zIndex: 1
-                    }}
-                >
-                    <CloseIcon />
-                </IconButton>
-                
-                <Typography variant="h6">
-                    Details for {selectedRoom} {selectedLocation} on {selectedDate}
-                </Typography>
-                {selectedRoom && (
-                    <BarChart fetchData={modalData} dustType={selectedDustType!} room={selectedRoom} roomLimits={roomLimits} />
-                )}
-            </Box>
-        </Modal>
+        <Box sx={{
+          position: "absolute", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 700, bgcolor: "background.paper",
+          boxShadow: 24, p: 4, borderRadius: 2
+        }}>
+          <IconButton
+            onClick={() => setIsModalOpen(false)}
+            sx={{
+              position: "absolute", top: 8, right: 8,
+              color: 'text.primary',
+              zIndex: 1
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          <Typography variant="h6">
+            Details for {selectedRoom} {selectedLocation} on {selectedDate}
+          </Typography>
+          {selectedRoom && (
+            <BarChart fetchData={modalData} dustType={selectedDustType!} room={selectedRoom} roomLimits={roomLimits} />
+          )}
+        </Box>
+      </Modal>
     </>
   );
 };

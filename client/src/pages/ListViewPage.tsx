@@ -66,6 +66,7 @@ function ListViewPage() {
             measurement_id: item.measurement_id,
             measurement_datetime: item.measurement_datetime,
             room: item.room,
+            area: item.area,
             location_name: item.location_name,
             count: item.count,
             alarm_high: item.alarm_high,
