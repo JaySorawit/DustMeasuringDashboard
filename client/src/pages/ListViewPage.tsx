@@ -155,6 +155,15 @@ function ListViewPage() {
                   </TableCell>
                   <TableCell>
                     <TableSortLabel
+                      active={orderBy === "area"}
+                      direction={orderBy === "area" ? order : "asc"}
+                      onClick={() => handleRequestSort("area")}
+                    >
+                      area
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell>
+                    <TableSortLabel
                       active={orderBy === "location_name"}
                       direction={orderBy === "location_name" ? order : "asc"}
                       onClick={() => handleRequestSort("location_name")}
@@ -214,6 +223,7 @@ function ListViewPage() {
                   currentData.map((item) => (
                     <TableRow key={`${item.measurement_id}-${item.dust_type}`}>
                       <TableCell>{item.room}</TableCell>
+                      <TableCell>{item.area}</TableCell>
                       <TableCell>{item.location_name}</TableCell>
                       <TableCell>{dayjs(item.measurement_datetime).format("DD/MM/YYYY HH:mm:ss")}</TableCell>
                       <TableCell>{item.dust_value}</TableCell>
