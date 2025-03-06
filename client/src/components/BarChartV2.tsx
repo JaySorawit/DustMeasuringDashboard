@@ -17,7 +17,7 @@ interface BarChartProps {
     fetchData: any[];
     room: string[];
     dustType: number;
-    onBarClick?: (room: string, location: string, dustType: number) => void;
+    onBarClick?: (room: string, area:string, location: string, dustType: number) => void;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -37,6 +37,7 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
         .map((data) => ({
             location: data.location_name,
             room: data.room,
+            area: data.area,
             value: data[dustTypeKey],
         }));
 
@@ -59,9 +60,12 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
                 const relatedRoom = filteredData.find(
                     (data) => data.location === selectedLocation
                 )?.room;
+                const relatedArea = filteredData.find(
+                    (data) => data.location === selectedLocation
+                )?.area;
 
                 if (relatedRoom) {
-                    onBarClick(relatedRoom, selectedLocation, dustType);
+                    onBarClick(relatedRoom, relatedArea, selectedLocation, dustType);
                 }
             }
         }

@@ -68,14 +68,15 @@ const RepeatPointPageV2: React.FC = () => {
     fetchRoomLimits();
   }, []);
 
-  const handleBarClick = (room: string, location: string, dustType: number) => {
+  const handleBarClick = (room: string, area:string, location: string, dustType: number) => {
     const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
     const selected = filteredData.filter(
       (data) => data.location_name === location &&
+        data.area === area &&
         data.room === room &&
         data[dustKey as unknown as keyof FetchedData] !== undefined
     );
-
+    
     if (selected.length > 0) {
       setModalData(selected);
       setSelectedRoom(room);
