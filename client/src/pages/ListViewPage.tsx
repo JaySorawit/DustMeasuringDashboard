@@ -66,6 +66,7 @@ function ListViewPage() {
             measurement_id: item.measurement_id,
             measurement_datetime: item.measurement_datetime,
             room: item.room,
+            area: item.area,
             location_name: item.location_name,
             count: item.count,
             alarm_high: item.alarm_high,
@@ -99,8 +100,8 @@ function ListViewPage() {
     setInitialLoading(true);
     try {
       const payload = {
-        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        startDate: startDate ? startDate.format("YYYY-MM-DD HH:mm:ss") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD HH:mm:ss") : null,
       };
 
       const response = await axios.post(
@@ -150,6 +151,15 @@ function ListViewPage() {
                       onClick={() => handleRequestSort("room")}
                     >
                       Room
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell>
+                    <TableSortLabel
+                      active={orderBy === "area"}
+                      direction={orderBy === "area" ? order : "asc"}
+                      onClick={() => handleRequestSort("area")}
+                    >
+                      area
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>
@@ -213,6 +223,7 @@ function ListViewPage() {
                   currentData.map((item) => (
                     <TableRow key={`${item.measurement_id}-${item.dust_type}`}>
                       <TableCell>{item.room}</TableCell>
+                      <TableCell>{item.area}</TableCell>
                       <TableCell>{item.location_name}</TableCell>
                       <TableCell>{dayjs(item.measurement_datetime).format("DD/MM/YYYY HH:mm:ss")}</TableCell>
                       <TableCell>{item.dust_value}</TableCell>

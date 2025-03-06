@@ -20,8 +20,8 @@ const AllPointPage: React.FC = () => {
     setInitialLoading(true);
     try {
       const payload = {
-        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        startDate: startDate ? startDate.format("YYYY-MM-DD HH:mm:ss") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD HH:mm:ss") : null,
       };
 
       const response = await axios.post(
@@ -81,32 +81,37 @@ const AllPointPage: React.FC = () => {
             initialStartDate={startDate}
             initialEndDate={endDate}
           />
-          {rooms.length === 0 ? (
-            <Typography variant="body1" align="center" sx={{ my: 4 }}>
-              No data available
-            </Typography>
-          ) : (rooms.map((room) =>
-            dustTypes.map((dustType) => {
-              const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
+          {rooms.map((room) => {
+            const areas = Array.from(new Set(filteredData.filter(d => d.room === room).map(d => d.area)));
 
-              const hasData = filteredData.some(
-                (data) =>
-                  data.room === room &&
-                  data[dustKey as keyof FetchedData] !== undefined
-              );
+            return areas.map((area) =>
+              dustTypes.map((dustType) => {
+                const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
 
-              return (
-                hasData && (
-                  <Box key={`${room}-${dustType}`} sx={{ my: 4, mx: 8 }}>
+                const areaData = filteredData.filter(
+                  (data) => data.room === room && data.area === area && data[dustKey as keyof FetchedData] !== undefined
+                );
+
+                if (areaData.length === 0) {
+                  return null;
+                }
+
+                return (
+                  <Box key={`${room}-${area}-${dustType}`} sx={{ my: 4, mx: 8 }}>
                     <Typography variant="h6" gutterBottom>
-                      {`${room} - Dust Type: ${dustType}`}
+                      {`${room} (${area}) - Dust Type: ${dustType} µm`}
                     </Typography>
-                    <BoxPlotByLocation fetchData={filteredData} room={[room]} dustType={dustType} roomLimits={roomLimits} />
+                    <BoxPlotByLocation
+                      fetchData={areaData}
+                      room={[room]}
+                      dustType={dustType}
+                      roomLimits={roomLimits}
+                    />
                   </Box>
-                )
-              );
-            })
-          ))}
+                );
+              })
+            );
+          })}
         </Box>
       )}
     </>

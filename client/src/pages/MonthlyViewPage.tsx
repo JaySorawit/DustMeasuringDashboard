@@ -20,8 +20,8 @@ const MonthlyViewPage: React.FC = () => {
     setInitialLoading(true);
     try {
       const payload = {
-        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        startDate: startDate ? startDate.format("YYYY-MM-DD HH:mm:ss") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD HH:mm:ss") : null,
       };
 
       const response = await axios.post(
@@ -81,35 +81,41 @@ const MonthlyViewPage: React.FC = () => {
             initialStartDate={startDate}
             initialEndDate={endDate}
           />
-          {rooms.length === 0 ? (
-            <Typography variant="body1" align="center" sx={{ my: 4 }}>
-              No data available
-            </Typography>
-          ) : (rooms.map((room) =>
-            dustTypes.map((dustType) => {
-              const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
-              const hasData = filteredData.some(
-                (data) =>
-                  data.room === room &&
-                  data[dustKey as keyof FetchedData] !== undefined
-              );
-              return (
-                hasData && (
-                  <Box key={`${room}-${dustType}`} sx={{ my: 4, mx: 8 }}>
+          {rooms.map((room) => {
+            const areas = Array.from(new Set(filteredData.filter(d => d.room === room).map(d => d.area)));
+
+            return areas.map((area) =>
+              dustTypes.map((dustType) => {
+                const dustKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
+
+                // Filter only data for this room, area, and dust type.
+                const areaData = filteredData.filter(
+                  (data) =>
+                    data.room === room &&
+                    data.area === area &&
+                    data[dustKey as keyof FetchedData] !== undefined
+                );
+
+                if (areaData.length === 0) {
+                  return null;  // Skip if no data for this combination.
+                }
+
+                return (
+                  <Box key={`${room}-${area}-${dustType}`} sx={{ my: 4, mx: 8 }}>
                     <Typography variant="h6" gutterBottom>
-                      {`${room} - Dust Type: ${dustType}`}
+                      {`${room} (${area}) - Dust Type: ${dustType} µm`}
                     </Typography>
                     <BoxPlotByDate
-                      fetchData={filteredData}
-                      room={[room]}
+                      fetchData={areaData}   // Pass only relevant data.
+                      room={[room]}          // Pass the current room.
                       dustType={dustType}
                       roomLimits={roomLimits}
                     />
                   </Box>
-                )
-              );
-            })
-          ))}
+                );
+              })
+            );
+          })}
         </Box>
       )}
     </>
