@@ -12,7 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import axios from "axios";
@@ -51,11 +51,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const [startDate, setStartDate] = useState<Dayjs | null>(initialStartDate);
   const [endDate, setEndDate] = useState<Dayjs | null>(initialEndDate);
   const [rooms, setRooms] = useState<string[]>([]);
+  const [_, setAreas] = useState<string[]>([]);
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
-  const [data, setData] = useState<{ location_name: string; room: string }[]>([]);
+  const [filteredAreas, setFilteredAreas] = useState<string[]>([]);
+  const [data, setData] = useState<{ location_name: string; room: string; area: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const filtersRef = useRef({
@@ -68,13 +71,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
     const fetchLocations = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/dust-measurements/locations`);
-        const data: { location_name: string; room: string }[] = response.data;
+        const data: { location_name: string; room: string; area: string }[] = response.data;
 
         const sortedLocations = data.map((item) => item.location_name).sort();
+        const sortedAreas = data.map((item) => item.area).sort();
         const sortedRooms = [...new Set(data.map((item) => item.room))].sort();
 
         setRooms(sortedRooms);
         setSelectedRooms(sortedRooms);
+        setAreas(sortedAreas);
         setSelectedLocations(sortedLocations);
         setData(data);
 
@@ -88,6 +93,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     fetchLocations();
   }, []);
 
+  // When selectedRooms change, update filteredAreas and filteredLocations
   useEffect(() => {
     const updatedLocations = Array.from(
       new Set(
@@ -95,12 +101,24 @@ const FilterBar: React.FC<FilterBarProps> = ({
           .filter((item) => selectedRooms.includes(item.room))
           .map((item) => item.location_name)
       )
-    ).sort((a, b) => {
-      return String(a).localeCompare(String(b), undefined, { numeric: true });
-    });
+    ).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
 
-    setSelectedLocations(updatedLocations);
+    const updatedAreas = Array.from(
+      new Set(
+        data
+          .filter((item) => selectedRooms.includes(item.room))
+          .map((item) => item.area)
+      )
+    ).sort();
+
+    // Update filter lists
     setFilteredLocations(updatedLocations);
+    setFilteredAreas(updatedAreas);
+
+    // Automatically select all areas and locations for the new room(s)
+    setSelectedAreas(updatedAreas);
+    setSelectedLocations(updatedLocations);
+
   }, [selectedRooms, data]);
 
   useEffect(() => {
@@ -113,9 +131,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setLoading(true);
     try {
       const payload = {
-        startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-        endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+        startDate: startDate ? startDate.format("YYYY-MM-DD HH:mm:ss") : null,
+        endDate: endDate ? endDate.format("YYYY-MM-DD HH:mm:ss") : null,
         rooms: selectedRooms,
+        areas: selectedAreas,
         locations: selectedLocations,
         dustTypes: selectedDustTypes,
       };
@@ -136,6 +155,41 @@ const FilterBar: React.FC<FilterBarProps> = ({
       setLoading(false);
     }
   };
+
+  const handleAreaChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as string[];
+    const updatedAreas = value.includes("all")
+      ? selectedAreas.length === filteredAreas.length
+        ? []
+        : [...filteredAreas]
+      : value;
+
+    setSelectedAreas(updatedAreas);
+
+    // Update locations based on selected areas and rooms
+    const updatedLocations = Array.from(
+      new Set(
+        data
+          .filter(
+            (item) =>
+              selectedRooms.includes(item.room) &&
+              (updatedAreas.length === 0 || updatedAreas.includes(item.area))
+          )
+          .map((item) => item.location_name)
+      )
+    ).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+
+    setSelectedLocations(updatedLocations);
+    setFilteredLocations(updatedLocations);
+  };
+
+  useEffect(() => {
+    if (data.length > 0) {
+      const uniqueAreas = [...new Set(data.map((item) => item.area))].sort();
+      setFilteredAreas(uniqueAreas);
+      setSelectedAreas(uniqueAreas);
+    }
+  }, [data]);
 
   const handleLocationChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value as string[];
@@ -158,19 +212,22 @@ const FilterBar: React.FC<FilterBarProps> = ({
     <div style={{ display: "flex", marginBottom: "2rem", flexWrap: "wrap", justifyContent: "center" }}>
       {isSingleDate ? (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <div style={{ width: "180px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }} >
-            <DatePicker label="Selected Date" value={startDate}
+          <div style={{ width: "200px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }} >
+            <DateTimePicker
+              label="Selected Date"
+              value={startDate}
+              ampm={false}
               onChange={(newValue) => {
                 setStartDate(newValue);
-                setEndDate(newValue);
+                setEndDate(dayjs(newValue).add(1, "day"));
               }} />
           </div>
         </LocalizationProvider>
       ) : (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }}>
-            <DatePicker label="Start Date" value={startDate} onChange={(newValue) => setStartDate(newValue)} />
-            <DatePicker label="End Date" value={endDate} onChange={(newValue) => setEndDate(newValue)} />
+          <div style={{ width: "400px", display: "flex", alignItems: "center", gap: "16px", marginRight: "0.5rem", }}>
+            <DateTimePicker label="Start Date" ampm={false} value={startDate} onChange={(newValue) => setStartDate(newValue)} />
+            <DateTimePicker label="End Date" ampm={false} value={endDate} onChange={(newValue) => setEndDate(newValue)} />
           </div>
         </LocalizationProvider>
       )}
@@ -203,6 +260,40 @@ const FilterBar: React.FC<FilterBarProps> = ({
             <MenuItem key={room} value={room}>
               <Checkbox checked={selectedRooms.includes(room)} />
               <ListItemText primary={room} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl sx={{ m: 1, width: 180 }}>
+        <InputLabel id="area-filter-label">Areas</InputLabel>
+        <Select
+          labelId="area-filter-label"
+          id="area-filter"
+          name="area-filter"
+          multiple
+          value={selectedAreas}
+          onChange={handleAreaChange}
+          input={<OutlinedInput label="Areas" />}
+          renderValue={(selected) => {
+            const uniqueSelected = Array.from(new Set(selected));
+            return uniqueSelected.length === filteredAreas.length
+              ? "All Areas"
+              : uniqueSelected.join(", ");
+          }}
+          MenuProps={MenuProps}
+        >
+          <MenuItem value="all">
+            <Checkbox
+              checked={selectedAreas.length === filteredAreas.length}
+              indeterminate={selectedAreas.length > 0 && selectedAreas.length < filteredAreas.length}
+            />
+            <ListItemText primary="Select All" />
+          </MenuItem>
+          {filteredAreas.map((area) => (
+            <MenuItem key={area} value={area}>
+              <Checkbox checked={selectedAreas.includes(area)} />
+              <ListItemText primary={area} />
             </MenuItem>
           ))}
         </Select>

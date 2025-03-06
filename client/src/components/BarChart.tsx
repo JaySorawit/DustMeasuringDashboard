@@ -26,10 +26,6 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
     const chartRef = useRef<any>(null);
     const [showUSL, setShowUSL] = useState(true);
     const [showUCL, setShowUCL] = useState(true);
-
-    console.log("fetchData", fetchData);
-    console.log("dustType", dustType);
-    console.log("roomLimits", roomLimits);
     
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
     const dustTypeLabel = (dustType * 10).toFixed(0).padStart(2, "0");
