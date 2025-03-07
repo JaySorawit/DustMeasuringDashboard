@@ -299,7 +299,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ m: 1, width: 180 }}>
+      {/* <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="location-filter-label">Locations</InputLabel>
         <Select
           labelId="location-filter-label"
@@ -331,7 +331,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </MenuItem>
           ))}
         </Select>
-      </FormControl>
+      </FormControl> */}
 
       <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="dust-type-filter-label">Dust Types</InputLabel>
