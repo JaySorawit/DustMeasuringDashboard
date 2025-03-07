@@ -17,7 +17,7 @@ interface BarChartProps {
     fetchData: any[];
     room: string[];
     dustType: number;
-    onBarClick?: (room: string, area:string, location: string, dustType: number) => void;
+    onBarClick?: (room: string, area: string, location: string, dustType: number) => void;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -71,14 +71,22 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
         }
     };
 
+    const getColorForCount = (count: number) => {
+        if (count === 1) return "rgba(0, 200, 0, 0.6)";
+        if (count === 2) return "rgba(255, 204, 0, 0.6)";
+        if (count >= 3) return "rgba(255, 0, 0, 0.6)";
+        return "rgba(150, 150, 150, 0.6)";
+    };
+
+    const backgroundColors = paginatedCounts.map(getColorForCount);
+
     const chartData = {
         labels: paginatedLocations,
         datasets: [
             {
-                label: `Dust Measurement Count`,
                 data: paginatedCounts,
-                backgroundColor: "rgba(75, 192, 192, 0.5)",
-                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: backgroundColors,
+                borderColor: backgroundColors.map(color => color.replace("0.6", "1")),
                 borderWidth: 1,
             },
         ],
@@ -97,12 +105,14 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
                     options={{
                         responsive: false,
                         plugins: {
-                            legend: { position: "top" },
+                            legend: {
+                                display: false
+                            },
                             title: { display: true, text: `Dust measurement count by Location` },
                         },
                         scales: {
                             x: { title: { display: true, text: "Locations" } },
-                            y: { title: { display: true, text: "Measurement Count" }, beginAtZero: true },
+                            y: { title: { display: true, text: "Measurement Count" }, beginAtZero: true, ticks: { stepSize: 1 } },
                         },
                         onClick: handleClick,
                     }}
