@@ -125,20 +125,20 @@ const BoxPlotByLocation: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, 
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUSL ? "error" : "error"}
+                    color={showUSL ? "error" : "inherit"}
                     onClick={() => setShowUSL(!showUSL)}
                     style={{ marginRight: "10px" }}
                 >
-                    {showUSL ? "Hide USL" : "Show USL"}
+                    USL
                 </Button>
 
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUCL ? "primary" : "primary"}
+                    color={showUCL ? "primary" : "inherit"}
                     onClick={() => setShowUCL(!showUCL)}
                 >
-                    {showUCL ? "Hide UCL" : "Show UCL"}
+                    UCL
                 </Button>
             </div>
 
@@ -146,8 +146,10 @@ const BoxPlotByLocation: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, 
                 <Chart
                     type="boxplot"
                     data={chartData}
+                    width={800}
+                    height={400}
                     options={{
-                        responsive: true,
+                        responsive: false,
                         plugins: {
                             legend: { position: "top" },
                             title: { display: true, text: `Box Plot for Dust Type ${dustType} in ${room.join(", ")}` },

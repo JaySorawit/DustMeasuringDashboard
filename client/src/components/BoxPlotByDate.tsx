@@ -9,13 +9,25 @@ import {
     Legend,
     ChartConfiguration,
 } from "chart.js";
-import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
+import {
+    BoxPlotController,
+    BoxAndWiskers,
+} from "@sgratzl/chartjs-chart-boxplot";
 import annotationPlugin from "chartjs-plugin-annotation";
 import { Button } from "@mui/material";
-import CircleIcon from '@mui/icons-material/Circle';
+import CircleIcon from "@mui/icons-material/Circle";
 
 // Register necessary chart.js components
-ChartJS.register(CategoryScale, LinearScale, BoxPlotController, BoxAndWiskers, Title, Tooltip, Legend, annotationPlugin);
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BoxPlotController,
+    BoxAndWiskers,
+    Title,
+    Tooltip,
+    Legend,
+    annotationPlugin
+);
 
 interface BoxPlotProps {
     fetchData: any[];
@@ -26,7 +38,12 @@ interface BoxPlotProps {
 
 const ITEMS_PER_PAGE = 1;
 
-const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, roomLimits }) => {
+const BoxPlotByDate: React.FC<BoxPlotProps> = ({
+    fetchData,
+    room,
+    dustType,
+    roomLimits,
+}) => {
     const [showUSL, setShowUSL] = useState(true);
     const [showUCL, setShowUCL] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
@@ -38,7 +55,9 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
     const filteredData = fetchData
         .filter(
             (data) =>
-                room.map((r) => r.toLowerCase().trim()).includes(data.room.toLowerCase().trim()) &&
+                room
+                    .map((r) => r.toLowerCase().trim())
+                    .includes(data.room.toLowerCase().trim()) &&
                 data[dustTypeKey] !== undefined
         )
         .map((data) => ({
@@ -46,7 +65,8 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
             value: data[dustTypeKey],
         }));
 
-        const groupedData = filteredData.reduce((acc: { [key: string]: number[] }, curr) => {
+    const groupedData = filteredData.reduce(
+        (acc: { [key: string]: number[] }, curr) => {
             if (typeof curr.date === "string" && curr.date.includes("T")) {
                 const dateOnly = curr.date.split("T")[0];
                 if (!acc[dateOnly]) acc[dateOnly] = [];
@@ -55,8 +75,9 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
                 console.warn(`Invalid date format: ${curr.date}`);
             }
             return acc;
-        }, {});
-        
+        },
+        {}
+    );
 
     // Group data by month and year
     const groupedByMonth: { [key: string]: { [key: string]: number[] } } = {};
@@ -84,11 +105,23 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
     // });
 
     const months = Object.keys(groupedByMonth).sort();
-    const paginatedMonths = months.slice(currentPage, currentPage + ITEMS_PER_PAGE);
+    const paginatedMonths = months.slice(
+        currentPage,
+        currentPage + ITEMS_PER_PAGE
+    );
     const paginatedValues = paginatedMonths.map((month) => groupedByMonth[month]);
 
     // Prepare the box plot data in the format expected by Chart.js BoxPlot
-    const prepareBoxPlotData = (data: number[]): { min: number; q1: number; median: number; mean : number, q3: number; max: number } => {
+    const prepareBoxPlotData = (
+        data: number[]
+    ): {
+        min: number;
+        q1: number;
+        median: number;
+        mean: number;
+        q3: number;
+        max: number;
+    } => {
         data.sort((a, b) => a - b);
         const min = data[0];
         const max = data[data.length - 1];
@@ -170,47 +203,51 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUSL ? "error" : "error"}
+                    color={showUSL ? "error" : "inherit"}
                     onClick={() => setShowUSL(!showUSL)}
                     style={{ marginRight: "10px" }}
                 >
-                    {showUSL ? "Hide USL" : "Show USL"}
+                    USL
                 </Button>
 
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUCL ? "primary" : "primary"}
+                    color={showUCL ? "primary" : "inherit"}
                     onClick={() => setShowUCL(!showUCL)}
                 >
-                    {showUCL ? "Hide UCL" : "Show UCL"}
+                    UCL
                 </Button>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", height: "400px" }}>
+            <div
+                style={{ display: "flex", justifyContent: "center", height: "400px" }}
+            >
                 <Chart
                     type="boxplot"
                     data={chartData}
                     options={{
-                        responsive: true,
+                        responsive: false,
                         plugins: {
                             legend: { position: "top" },
-                            title: { display: true, text: `Box Plot for Dust Type ${dustType} in ${room.join(", ")}` },
+                            title: {
+                                display: true,
+                                text: `Box Plot for Dust Type ${dustType} in ${room.join(", ")}`,
+                            },
                             annotation: {
                                 annotations,
                             },
                         },
                         scales: {
-                            x: {
-                                title: { display: true, text: "Date" },
-                                type: "category",
-                            },
+                            x: { title: { display: true, text: "Date" }, type: "category" },
                             y: {
                                 title: { display: true, text: "Dust Value" },
                                 beginAtZero: true,
                             },
                         },
                     }}
+                    width={800}
+                    height={400}
                 />
             </div>
 
@@ -230,7 +267,9 @@ const BoxPlotByDate: React.FC<BoxPlotProps> = ({ fetchData, room, dustType, room
 
                 <Button
                     variant="contained"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                    onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+                    }
                     disabled={currentPage === totalPages - 1}
                     style={{ marginLeft: "10px", width: "100px" }}
                 >
