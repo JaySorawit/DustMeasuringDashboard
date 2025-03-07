@@ -92,8 +92,10 @@ const BarChartV2: React.FC<BarChartProps> = ({ fetchData, room, dustType, onBarC
                 <Chart
                     type="bar"
                     data={chartData}
+                    width={800}
+                    height={400}
                     options={{
-                        responsive: true,
+                        responsive: false,
                         plugins: {
                             legend: { position: "top" },
                             title: { display: true, text: `Dust measurement count by Location` },
