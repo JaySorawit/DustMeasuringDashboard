@@ -1,61 +1,23 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import FilterBar from "../components/FilterBar";
 import {
-  TablePagination,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
   CircularProgress,
   Box,
 } from "@mui/material";
-import { DustMeasurement, FetchedData } from "../types/types";
+import { DustMeasurement, dustType, FetchedData } from "../types/types";
 import axios from "axios";
 import API_BASE_URL from "../configs/apiConfig";
+import { DataGrid, GridColDef, GridToolbarContainer, GridToolbarExport, GridRenderCellParams } from "@mui/x-data-grid";
 
 function ListViewPage() {
   const [filteredData, setFilteredData] = useState<DustMeasurement[]>([]);
-  const dustTypes = [0.5, 0.3, 0.1];
+  const dustTypes = dustType;
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [orderBy, setOrderBy] = useState<string>("room");
   const [startDate] = useState<Dayjs>(dayjs().startOf("month"));
   const [endDate] = useState<Dayjs>(dayjs().endOf("month"));
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
-
-  const handleRequestSort = (property: keyof DustMeasurement | "dust_type" | "dust_value") => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const sortData = (array: DustMeasurement[]): DustMeasurement[] => {
-    return [...array].sort((a, b) => {
-      if (orderBy === "location_name") {
-        return order === "asc"
-          ? a.location_name.localeCompare(b.location_name)
-          : b.location_name.localeCompare(a.location_name);
-      }
-
-      if (orderBy === "room") {
-        return order === "asc"
-          ? a.room.localeCompare(b.room)
-          : b.room.localeCompare(a.room);
-      }
-
-      const aValue = a[orderBy as keyof DustMeasurement] as number | string;
-      const bValue = b[orderBy as keyof DustMeasurement] as number | string;
-
-      if (aValue < bValue) return order === "asc" ? -1 : 1;
-      if (aValue > bValue) return order === "asc" ? 1 : -1;
-      return 0;
-    });
-  };
 
   const transformData = (data: FetchedData[]): DustMeasurement[] => {
     return data.flatMap((item) =>
@@ -80,21 +42,7 @@ function ListViewPage() {
     );
   };
 
-  const currentData = useMemo(() => {
-    const transformedData = [...filteredData];
-    const sortedData = sortData(transformedData);
-    const startIndex = page * rowsPerPage;
-    return sortedData.slice(startIndex, startIndex + rowsPerPage);
-  }, [filteredData, page, rowsPerPage, order, orderBy]);
 
-  const handleChangePage = (_: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   const fetchData = async () => {
     setInitialLoading(true);
@@ -122,6 +70,51 @@ function ListViewPage() {
     fetchData();
   }, []);
 
+  const columns: GridColDef[] = [
+    { field: "room", headerName: "Room", flex: 1 },
+    { field: "area", headerName: "Area", flex: 1 },
+    { field: "location_name", headerName: "Location", flex: 1 },
+    {
+      field: "measurement_datetime",
+      headerName: "Date",
+      flex: 1.5,
+      valueFormatter: (value: string) => dayjs(value).format("DD/MM/YYYY HH:mm:ss"),
+    },
+    { field: "dust_value", headerName: "Dust Value", flex: 1 },
+    { field: "dust_type", headerName: "Dust Type", flex: 1 },
+    {
+      field: "count",
+      headerName: "Repeat",
+      flex: 1,
+      valueFormatter: (value: number) => {
+        return value-1;
+      },
+    },
+    {
+      field: "alarm_high",
+      headerName: "Alarm status",
+      flex: 1,
+      valueFormatter: (value: number) => {
+        return value === 0 ? "Pass" : "Not Pass";
+      },
+      renderCell: (params: GridRenderCellParams) => {
+        return params.value === 0 ? (
+          <div style={{ color: "green" }}>Pass</div>
+        ) : (
+          <div style={{ color: "red" }}>Not Pass</div>
+        );
+      }
+    },
+  ];
+
+  function CustomToolbar() {
+    return (
+      <GridToolbarContainer>
+        <GridToolbarExport printOptions={{ disableToolbarButton: true }}/>
+      </GridToolbarContainer>
+    );
+  }
+
   return (
     <>
       {initialLoading ? (
@@ -140,118 +133,20 @@ function ListViewPage() {
             initialStartDate={startDate}
             initialEndDate={endDate}
           />
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "room"}
-                      direction={orderBy === "room" ? order : "asc"}
-                      onClick={() => handleRequestSort("room")}
-                    >
-                      Room
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "area"}
-                      direction={orderBy === "area" ? order : "asc"}
-                      onClick={() => handleRequestSort("area")}
-                    >
-                      area
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "location_name"}
-                      direction={orderBy === "location_name" ? order : "asc"}
-                      onClick={() => handleRequestSort("location_name")}
-                    >
-                      Location
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "measurement_datetime"}
-                      direction={orderBy === "measurement_datetime" ? order : "asc"}
-                      onClick={() => handleRequestSort("measurement_datetime")}
-                    >
-                      Date
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "dust_value"}
-                      direction={orderBy === "dust_value" ? order : "asc"}
-                      onClick={() => handleRequestSort("dust_value")}
-                    >
-                      Dust Value
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "dust_type"}
-                      direction={orderBy === "dust_type" ? order : "asc"}
-                      onClick={() => handleRequestSort("dust_type")}
-                    >
-                      Dust Type
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "count"}
-                      direction={orderBy === "count" ? order : "asc"}
-                      onClick={() => handleRequestSort("count")}
-                    >
-                      Count
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={orderBy === "alarm_high"}
-                      direction={orderBy === "alarm_high" ? order : "asc"}
-                      onClick={() => handleRequestSort("alarm_high")}
-                    >
-                      Alarm high
-                    </TableSortLabel>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {currentData.length > 0 ? (
-                  currentData.map((item) => (
-                    <TableRow key={`${item.measurement_id}-${item.dust_type}`}>
-                      <TableCell>{item.room}</TableCell>
-                      <TableCell>{item.area}</TableCell>
-                      <TableCell>{item.location_name}</TableCell>
-                      <TableCell>{dayjs(item.measurement_datetime).format("DD/MM/YYYY HH:mm:ss")}</TableCell>
-                      <TableCell>{item.dust_value}</TableCell>
-                      <TableCell>{item.dust_type}</TableCell>
-                      <TableCell>{item.count}</TableCell>
-                      <TableCell>{item.alarm_high}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} style={{ textAlign: "center" }}>
-                      No data available
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <TablePagination
-            rowsPerPageOptions={[20, 30, 50]}
-            component="div"
-            count={filteredData.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
+          <Box sx={{ height: 600, width: "100%" }}>
+            <DataGrid
+              rows={filteredData}
+              columns={columns}
+              getRowId={(row) => `${row.measurement_id}-${row.dust_type}`}
+              paginationModel={{ pageSize: rowsPerPage, page }}
+              pageSizeOptions={[20, 50, 100]}
+              slots={{ toolbar: CustomToolbar }}
+              onPaginationModelChange={(model) => {
+                setPage(model.page);
+                setRowsPerPage(model.pageSize);
+              }}
+            />
+          </Box>
         </>
       )}
     </>

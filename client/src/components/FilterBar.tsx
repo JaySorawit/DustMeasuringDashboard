@@ -56,7 +56,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedDustTypes, setSelectedDustTypes] = useState<number[]>([]);
-  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
+  const [__, setFilteredLocations] = useState<string[]>([]);
   const [filteredAreas, setFilteredAreas] = useState<string[]>([]);
   const [data, setData] = useState<{ location_name: string; room: string; area: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -191,18 +191,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
     }
   }, [data]);
 
-  const handleLocationChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as string[];
-    if (value.includes("all")) {
-      setSelectedLocations(
-        selectedLocations.length === filteredLocations.length
-          ? []
-          : [...filteredLocations]
-      );
-    } else {
-      setSelectedLocations(value);
-    }
-  };
+  // const handleLocationChange = (event: SelectChangeEvent<string[]>) => {
+  //   const value = event.target.value as string[];
+  //   if (value.includes("all")) {
+  //     setSelectedLocations(
+  //       selectedLocations.length === filteredLocations.length
+  //         ? []
+  //         : [...filteredLocations]
+  //     );
+  //   } else {
+  //     setSelectedLocations(value);
+  //   }
+  // };
 
   const applyFilters = () => {
     fetchFilteredData();
@@ -299,7 +299,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </FormControl>
 
-      <FormControl sx={{ m: 1, width: 180 }}>
+      {/* <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="location-filter-label">Locations</InputLabel>
         <Select
           labelId="location-filter-label"
@@ -331,7 +331,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </MenuItem>
           ))}
         </Select>
-      </FormControl>
+      </FormControl> */}
 
       <FormControl sx={{ m: 1, width: 180 }}>
         <InputLabel id="dust-type-filter-label">Dust Types</InputLabel>

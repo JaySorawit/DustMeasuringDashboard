@@ -19,7 +19,7 @@ def fetch_ucl_data():
         raise Exception(f"Failed to fetch UCL data. Status code: {response.status_code}")
 
 # Function to generate UM values using Normal Distribution with exceedance probability
-def generate_um_values(ucl, previous_values=None, exceedance_probability=0.001):
+def generate_um_values(ucl, previous_values=None, exceedance_probability=0.1):
     def random_um(mean, std_dev, ucl_value):
         value = random.gauss(mean, std_dev)
         return max(0, min(value, ucl_value * 1.5))  # Clamp to [0, 1.5 * UCL]
@@ -58,8 +58,8 @@ def generate_um_values(ucl, previous_values=None, exceedance_probability=0.001):
 
 # Generate mock data using the realistic UM generation logic
 def generate_mock_data(ucl_data, room='Room3'):
-    areas = ['Clean booth']
-    locations = [f"{i:03d}" for i in range(1, 16)]
+    areas = ['Cold Room']
+    locations = [f"{i:03d}" for i in range(1, 11)]
     start_date = datetime(2025, 1, 1, 7, 0)
     end_date = datetime(2025, 3, 19, 23, 59)
 
@@ -82,8 +82,10 @@ def generate_mock_data(ucl_data, room='Room3'):
 
                 previous_um_values = None  # Reset at each new location
 
+                alarm_flag = False  # Track exceedance across all counts
+
                 for count in range(1, 4):
-                    # Use the new generate_um_values function
+                    # Generate UM values
                     um_values = generate_um_values(ucl, previous_values=previous_um_values)
 
                     entry = {
@@ -96,11 +98,18 @@ def generate_mock_data(ucl_data, room='Room3'):
                         'um03': um_values['um03'],
                         'um05': um_values['um05'],
                         'running_state': random.randint(0, 1),
-                        'alarm_high': 1 if count == 3 else 0,
+                        'alarm_high': 0,
                     }
+
+                    if count == 3 and any(um_values[k] > ucl[k.replace('um', 'ucl')] for k in ['um01', 'um03', 'um05']):
+                        entry['alarm_high'] = 1
+
                     mock_data.append(entry)
 
-                    print(f"Measured {room}_{area}_{location} at {measurement_time}, count {count}, um: {um_values}")
+                    if all(um_values[k] <= ucl[k.replace('um', 'ucl')] for k in ['um01', 'um03', 'um05']):
+                        break
+
+                    print(f"Measured {room}_{area}_{location} at {measurement_time}, count {count}, um: {um_values}, alarm_high: {entry['alarm_high']}")
 
                     # Update previous UM values for next iteration
                     previous_um_values = um_values

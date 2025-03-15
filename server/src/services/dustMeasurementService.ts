@@ -1,5 +1,5 @@
 import DustMeasurement from '../models/dustMeasurementModel';
-import { Op, fn, col } from 'sequelize';
+import { Op } from 'sequelize';
 
 interface DustMeasurementInput {
     measurement_datetime: Date;

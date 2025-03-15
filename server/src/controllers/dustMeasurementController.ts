@@ -25,6 +25,7 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
     try {
         const { startDate, endDate, rooms, areas, locations, dustTypes } = req.body;
 
+        // Validate and parse dates
         if (!startDate || !endDate) {
             res.status(400).json({ message: 'Start date and end date are required.' });
             return;
@@ -44,44 +45,26 @@ export const getDustMeasurementDataByDateRangeHandler = async (req: Request, res
             return;
         }
 
-        // Default to empty arrays if these parameters are missing
-        const roomsArray = Array.isArray(rooms) && rooms.length ? rooms : [];
-        const areaArray = Array.isArray(areas) && areas.length ? areas : [];
-        const locationArray = Array.isArray(locations) && locations.length ? locations : [];
-        const dustTypeArray = Array.isArray(dustTypes) && dustTypes.length ? dustTypes : [];
+        if (parsedStartDate > parsedEndDate) {
+            res.status(400).json({ message: 'Start date cannot be greater than end date.' });
+        }
 
-        // Function to get data for each 7-day period
-        const fetchDataForWeek = async (start: Date, end: Date) => {
-            return await getDustMeasurementDataByDateRange(start, end, roomsArray, areaArray, locationArray, dustTypeArray);
-        };
+        // Default to empty arrays if parameters are missing
+        const roomsArray = rooms ?? [];
+        const areaArray = areas ?? [];
+        const locationArray = locations ?? [];
+        const dustTypeArray = dustTypes ?? [];
 
-        // Function to break the range into chunks of 7 days
-        const fetchDataByChunks = async () => {
-            const result: any[] = [];
-            let currentStartDate = parsedStartDate;
-            let currentEndDate = new Date(parsedStartDate);
-            currentEndDate.setDate(currentEndDate.getDate() + 6);
-            
-            while (currentEndDate <= parsedEndDate) {
-                const data = await fetchDataForWeek(currentStartDate, currentEndDate);
-                result.push(...data);
+        // Fetch all data in one call
+        const measurements = await getDustMeasurementDataByDateRange(
+            parsedStartDate,
+            parsedEndDate,
+            roomsArray,
+            areaArray,
+            locationArray,
+            dustTypeArray
+        );
 
-                currentStartDate = new Date(currentEndDate);
-                currentStartDate.setDate(currentStartDate.getDate() + 1);
-                currentEndDate = new Date(currentStartDate);
-                currentEndDate.setDate(currentEndDate.getDate() + 6);
-            }
-
-            if (currentStartDate <= parsedEndDate) {
-                const data = await fetchDataForWeek(currentStartDate, parsedEndDate);
-                result.push(...data);
-            }
-        
-            return result;
-        };
-
-        // Fetch and send data in chunks
-        const measurements = await fetchDataByChunks();
         res.json(measurements);
     } catch (error) {
         res.status(500).json({ message: `Error fetching measurements: ${(error as Error).message}` });

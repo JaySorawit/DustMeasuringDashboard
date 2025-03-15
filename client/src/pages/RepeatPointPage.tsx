@@ -7,10 +7,10 @@ import axios from "axios";
 import API_BASE_URL from "../configs/apiConfig";
 import FilterBar from "../components/FilterBar";
 import dayjs from 'dayjs';
-import { FetchedData } from "../types/types";
+import { dustType, FetchedData } from "../types/types";
 
 const RepeatPointPageV2: React.FC = () => {
-  const dustTypes = [0.5, 0.3, 0.1];
+  const dustTypes = dustType;
   const [rooms, setRooms] = useState<string[]>([]);
   const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);

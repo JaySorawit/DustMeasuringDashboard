@@ -1,3 +1,5 @@
+export const dustType = [1.0, 0.5, 0.3, 0.1]
+
 export interface DustMeasurement {
   measurement_id: number;
   measurement_datetime: string;
