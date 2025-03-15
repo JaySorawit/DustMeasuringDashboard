@@ -3,12 +3,12 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import FilterBar from "../components/FilterBar";
 import BoxPlotByLocation from "../components/BoxPlotByLocation";
 import dayjs, { Dayjs } from "dayjs";
-import { FetchedData } from "../types/types";
+import { dustType, FetchedData } from "../types/types";
 import API_BASE_URL from "../configs/apiConfig";
 import axios from "axios";
 
 const AllPointPage: React.FC = () => {
-  const dustTypes = [0.5, 0.3, 0.1];
+  const dustTypes = dustType;
   const [rooms, setRooms] = useState<string[]>([]);
   const [roomLimits, setRoomLimits] = useState<any>({});
   const [filteredData, setFilteredData] = useState<FetchedData[]>([]);

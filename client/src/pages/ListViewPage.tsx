@@ -5,14 +5,14 @@ import {
   CircularProgress,
   Box,
 } from "@mui/material";
-import { DustMeasurement, FetchedData } from "../types/types";
+import { DustMeasurement, dustType, FetchedData } from "../types/types";
 import axios from "axios";
 import API_BASE_URL from "../configs/apiConfig";
 import { DataGrid, GridColDef, GridToolbarContainer, GridToolbarExport, GridRenderCellParams } from "@mui/x-data-grid";
 
 function ListViewPage() {
   const [filteredData, setFilteredData] = useState<DustMeasurement[]>([]);
-  const dustTypes = [0.5, 0.3, 0.1];
+  const dustTypes = dustType;
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(20);
   const [startDate] = useState<Dayjs>(dayjs().startOf("month"));
