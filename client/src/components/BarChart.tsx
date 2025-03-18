@@ -26,7 +26,7 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
     const chartRef = useRef<any>(null);
     const [showUSL, setShowUSL] = useState(true);
     const [showUCL, setShowUCL] = useState(true);
-    
+
     const dustTypeKey = `um${(dustType * 10).toFixed(0).padStart(2, "0")}`;
     const dustTypeLabel = (dustType * 10).toFixed(0).padStart(2, "0");
 
@@ -115,7 +115,7 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
                             x: {
                                 title: { display: true, text: "Count" },
                                 ticks: { stepSize: 1 },
-                                
+
                             },
                             y: {
                                 title: { display: true, text: "Dust Value" },
@@ -129,20 +129,20 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUSL ? "error" : "error"}
+                    color={showUSL ? "error" : "inherit"}
                     onClick={() => setShowUSL(!showUSL)}
                     style={{ marginRight: "10px" }}
                 >
-                    {showUSL ? "Hide USL" : "Show USL"}
+                    USL
                 </Button>
 
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUSL ? "primary" : "primary"}
+                    color={showUCL ? "primary" : "inherit"}
                     onClick={() => setShowUCL(!showUCL)}
                 >
-                    {showUCL ? "Hide UCL" : "Show UCL"}
+                    UCL
                 </Button>
             </div>
         </>
