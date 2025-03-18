@@ -129,20 +129,20 @@ const BarChart: React.FC<BarChartProps> = ({ fetchData, dustType, room, roomLimi
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUSL ? "error" : "error"}
+                    color={showUSL ? "error" : "inherit"}
                     onClick={() => setShowUSL(!showUSL)}
                     style={{ marginRight: "10px" }}
                 >
-                    {showUSL ? "Hide USL" : "Show USL"}
+                    USL
                 </Button>
 
                 <Button
                     variant="outlined"
                     startIcon={<CircleIcon />}
-                    color={showUSL ? "primary" : "primary"}
+                    color={showUCL ? "primary" : "inherit"}
                     onClick={() => setShowUCL(!showUCL)}
                 >
-                    {showUCL ? "Hide UCL" : "Show UCL"}
+                    UCL
                 </Button>
             </div>
         </>
