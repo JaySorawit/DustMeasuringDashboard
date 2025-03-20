@@ -58,10 +58,10 @@ def generate_um_values(ucl, previous_values=None, exceedance_probability=0.1):
 
 # Generate mock data using the realistic UM generation logic
 def generate_mock_data(ucl_data, room='Room3'):
-    areas = ['Cold Room']
-    locations = [f"{i:03d}" for i in range(1, 11)]
+    areas = ['Clean booth']
+    locations = [f"{i:03d}" for i in range(1, 26)]
     start_date = datetime(2025, 1, 1, 7, 0)
-    end_date = datetime(2025, 3, 19, 23, 59)
+    end_date = datetime(2025, 3, 21, 23, 59)
 
     mock_data = []
 

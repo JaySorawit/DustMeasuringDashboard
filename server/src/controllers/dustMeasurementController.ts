@@ -108,8 +108,10 @@ export const createDustMeasurementHandler = async (req: Request, res: Response):
             return;
         }
 
+        const utcDatetime = new Date(measurement_datetime + 'Z');
+
         const newMeasurement = await createDustMeasurementData({
-            measurement_datetime,
+            measurement_datetime: utcDatetime,
             room,
             area,
             location_name,

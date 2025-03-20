@@ -125,7 +125,6 @@ export const getDustMeasurementLocation = async (rooms?: string, areas?: string)
 // Create a new dust measurement data
 export const createDustMeasurementData = async (data: Omit<DustMeasurementInput, 'measurement_id'>) => {
     try {
-        console.log('Data to insert:', data);  // ตรวจสอบค่าที่ถูกส่ง
         const newMeasurement = await DustMeasurement.create(data);
         return newMeasurement;
     } catch (error) {

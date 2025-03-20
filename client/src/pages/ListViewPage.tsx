@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import dayjs, { Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 import FilterBar from "../components/FilterBar";
 import {
   CircularProgress,
@@ -78,7 +80,7 @@ function ListViewPage() {
       field: "measurement_datetime",
       headerName: "Date",
       flex: 1.5,
-      valueFormatter: (value: string) => dayjs(value).format("DD/MM/YYYY HH:mm:ss"),
+      valueFormatter: (value: string) => dayjs.utc(value).format("DD/MM/YYYY HH:mm:ss"),
     },
     { field: "dust_value", headerName: "Dust Value", flex: 1 },
     { field: "dust_type", headerName: "Dust Type", flex: 1 },
