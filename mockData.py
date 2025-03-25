@@ -19,7 +19,7 @@ def fetch_ucl_data():
         raise Exception(f"Failed to fetch UCL data. Status code: {response.status_code}")
 
 # Function to generate UM values using Normal Distribution with exceedance probability
-def generate_um_values(ucl, previous_values=None, exceedance_probability=0.1):
+def generate_um_values(ucl, previous_values=None, exceedance_probability=0.5):
     def random_um(mean, std_dev, ucl_value):
         value = random.gauss(mean, std_dev)
         return max(0, min(value, ucl_value * 1.5))  # Clamp to [0, 1.5 * UCL]
@@ -57,11 +57,11 @@ def generate_um_values(ucl, previous_values=None, exceedance_probability=0.1):
     return um_values
 
 # Generate mock data using the realistic UM generation logic
-def generate_mock_data(ucl_data, room='Room3'):
+def generate_mock_data(ucl_data, room='Room1'):
     areas = ['Clean booth']
-    locations = [f"{i:03d}" for i in range(1, 26)]
-    start_date = datetime(2025, 1, 1, 7, 0)
-    end_date = datetime(2025, 3, 21, 23, 59)
+    locations = [f"{i:03d}" for i in range(1, 11)]
+    start_date = datetime(2025, 3, 25, 7, 0)
+    end_date = datetime(2025, 3, 25, 23, 59)
 
     mock_data = []
 

@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import Layout from './layouts/dashboard';
+import OverviewPage from './pages/OverviewPage';
 import AllPointPage from './pages/AllPointPage';
 import ListViewPage from './pages/ListViewPage';
 import MonthlyViewPage from './pages/MonthlyViewPage';
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
         children: [
           {
             path: '',
+            element: <OverviewPage />,
+          },
+          {
+            path: 'AllPointPage',
             element: <AllPointPage />,
           },
           {
