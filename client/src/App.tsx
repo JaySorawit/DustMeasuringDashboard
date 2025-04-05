@@ -1,3 +1,4 @@
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import DateRangeIcon from '@mui/icons-material/DateRange';
@@ -14,6 +15,11 @@ export default function App() {
   return (
     <AppProvider
       navigation={[
+        {
+          segment: 'RobotCommandPage',
+          title: 'Robot command',
+          icon: <SmartToyIcon />,
+        },
         {
           segment: '',
           title: 'All Point (Daily report)',

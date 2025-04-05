@@ -8,6 +8,7 @@ import ListViewPage from './pages/ListViewPage';
 import MonthlyViewPage from './pages/MonthlyViewPage';
 import RepeatPointPage from './pages/RepeatPointPage';
 import NotFoundPage from './pages/NotFoundPage';
+import RobotCommandPage from './pages/RobotCommandPage';
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
         path: '',
         element: <Layout />,
         children: [
+          {
+            path: 'RobotCommandPage',
+            element: <RobotCommandPage />,
+          },
           {
             path: '',
             element: <AllPointPage />,
